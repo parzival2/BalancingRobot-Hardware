@@ -417,11 +417,39 @@ param set-default BAL_PWM_FREQ 20000       # 20 kHz PWM
 
 ## 7. Custom PX4 Modules to Write
 
-### 7.1 Balance Controller Module
+### 7.0 Cascaded Control Architecture Overview
+
+The system uses a **cascaded (two-loop) control** architecture for torque-based motor control:
+
+```
+                   Outer Loop (500-1000 Hz)                Inner Loop (10-20 kHz)
+
+EKF2 pitch ──→ [Balance PID] ──→ I_desired (Amps) ──→ [Current PI] ──→ PWM duty
+                    |                                        ↑
+                    |                                        |
+                    └── pitch error                   I_actual (CS pin)
+                                                      ADC read per PWM cycle
+```
+
+**Why torque control (not voltage/PWM control):**
+- For a brushed DC motor: **T = Kt x I** (torque = torque constant x current)
+- Controlling current = controlling torque directly
+- The robot applies the **same corrective force** whether battery is full (8.4V) or depleted (6.0V)
+- The inner current loop rejects back-EMF disturbances (motor speed changes) faster than the balance loop can see them
+- Inherent current limiting -- motor can never exceed commanded current, protecting DRV8874 and motor
+
+**Loop separation:**
+
+| Loop | Rate | Module | Input | Output |
+|------|------|--------|-------|--------|
+| Outer (balance) | 500-1000 Hz | `balance_control` | Pitch angle (EKF2) | Desired current (Amps) |
+| Inner (current) | 10-20 kHz | `drv8874` driver | Desired current + CS ADC | PWM duty cycle |
+
+### 7.1 Balance Controller Module (Outer Loop)
 
 **Location:** `src/modules/balance_control/`
 
-**Purpose:** Inner-loop pitch stabilization. Reads IMU attitude, commands motor PWM.
+**Purpose:** Pitch stabilization. Reads attitude, outputs desired motor torque as a current command (Amps).
 
 **uORB subscriptions (input):**
 | Topic | Source | Data Used |
@@ -434,8 +462,8 @@ param set-default BAL_PWM_FREQ 20000       # 20 kHz PWM
 **uORB publications (output):**
 | Topic | Destination | Data Published |
 |-------|-------------|----------------|
-| `actuator_motors` | Motor driver module | Motor commands (-1 to +1) per channel |
-| `balance_status` | Logger / MAVLink | Pitch angle, pitch rate, motor cmd, state |
+| `actuator_motors` | DRV8874 driver | Current commands (Amps) per channel, range -I_max to +I_max |
+| `balance_status` | Logger / MAVLink | Pitch angle, pitch rate, torque cmd, state |
 
 **Control loop (runs at 500-1000 Hz via work queue):**
 
@@ -450,20 +478,21 @@ void BalanceControl::Run()
         float pitch = euler.theta();
         float pitch_rate = att.pitchspeed;  // from gyro
 
-        // 2. PID controller
+        // 2. PID controller -- outputs desired current (Amps), not PWM duty
         float error = _param_pitch_setpoint.get() - pitch;
         float p_term = _param_p_gain.get() * error;
         float i_term = _integrator.update(error, dt);
         float d_term = _param_d_gain.get() * (-pitch_rate);  // derivative on measurement
-        float output = math::constrain(p_term + i_term + d_term,
-                                        -_param_max_pwm.get(),
-                                         _param_max_pwm.get());
+        float torque_cmd = math::constrain(p_term + i_term + d_term,
+                                           -_param_max_current.get(),
+                                            _param_max_current.get());
 
-        // 3. Publish motor commands
+        // 3. Publish current commands (Amps) to DRV8874 driver
+        //    The inner current loop in the driver handles the actual PWM
         actuator_motors_s motors{};
         motors.timestamp = hrt_absolute_time();
-        motors.control[0] = output;   // left motor
-        motors.control[1] = output;   // right motor (same for pure balance)
+        motors.control[0] = torque_cmd;   // left motor (Amps)
+        motors.control[1] = torque_cmd;   // right motor (Amps, same for pure balance)
         _motors_pub.publish(motors);
 
         // 4. Publish status for logging
@@ -471,7 +500,7 @@ void BalanceControl::Run()
         status.timestamp = hrt_absolute_time();
         status.pitch = pitch;
         status.pitch_rate = pitch_rate;
-        status.motor_output = output;
+        status.torque_cmd = torque_cmd;
         status.error = error;
         _status_pub.publish(status);
     }
@@ -482,41 +511,96 @@ void BalanceControl::Run()
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `BAL_PITCH_P` | Float | 15.0 | Proportional gain |
+| `BAL_PITCH_P` | Float | 15.0 | Proportional gain (Amps per radian of pitch error) |
 | `BAL_PITCH_I` | Float | 0.5 | Integral gain |
 | `BAL_PITCH_D` | Float | 1.0 | Derivative gain |
 | `BAL_PITCH_SP` | Float | 0.0 | Target pitch angle (rad, 0 = upright) |
-| `BAL_MAX_PWM` | Float | 0.8 | Maximum PWM output (0-1) |
+| `BAL_MAX_I` | Float | 1.2 | Maximum current command (Amps, below 1.4A stall) |
 | `BAL_LOOP_RATE` | Int | 500 | Control loop rate (Hz) |
 | `BAL_I_MAX` | Float | 5.0 | Integrator anti-windup limit |
 
-### 7.2 DRV8874 Motor Driver Module
+### 7.2 DRV8874 Motor Driver Module (Inner Current Loop)
 
 **Location:** `src/drivers/actuators/drv8874/`
 
-**Purpose:** Translates `actuator_motors` uORB commands into PWM + GPIO signals for two Pololu DRV8874 carriers.
+**Purpose:** Receives current commands from the balance controller, runs a fast inner PI loop to track the desired current using the Pololu CS pin for feedback, and drives the DRV8874 via PWM + GPIO.
 
 **uORB subscriptions:**
 | Topic | Data Used |
 |-------|-----------|
-| `actuator_motors` | Motor commands, channels 0 and 1, range -1.0 to +1.0 |
+| `actuator_motors` | Desired current per motor (Amps), channels 0 and 1 |
 
-**Hardware interface per motor:**
+**uORB publications:**
+| Topic | Data Published |
+|-------|----------------|
+| `motor_current` | Actual measured current per motor (for logging/diagnostics) |
+
+**Inner current control loop (runs at PWM frequency, 10-20 kHz, from FlexPWM timer ISR):**
+
+```cpp
+// Called every PWM cycle (50 us at 20 kHz)
+void DRV8874::current_control_isr()
+{
+    // 1. Read actual motor current from Pololu CS pin (ADC)
+    //    Pololu: 2.49k RIPROPI, ~1.1 V/A
+    //    R6 (1k) + C9 (10nF) filter: fc = 15.9 kHz
+    float adc_voltage = adc_read_fast(_cs_adc_channel) * (3.3f / 4095.0f);
+    float i_actual = adc_voltage / 1.133f;  // Convert to Amps
+
+    // 2. Get desired current from balance controller (updated at 500-1000 Hz)
+    float i_desired = _current_setpoint;  // Latched from uORB actuator_motors
+
+    // 3. Determine direction
+    bool forward = (i_desired >= 0.0f);
+    float i_error = fabsf(i_desired) - i_actual;  // CS only reads magnitude
+
+    // 4. Fast PI current controller
+    float p_out = _kp_current * i_error;
+    _i_integrator += _ki_current * i_error * _dt;
+    _i_integrator = math::constrain(_i_integrator, 0.0f, _max_duty);
+    float duty = math::constrain(p_out + _i_integrator, 0.0f, _max_duty);
+
+    // 5. Apply to hardware
+    set_direction_gpio(forward);   // PH/IN2 pin
+    set_pwm_duty(duty);            // EN/IN1 pin
+
+    // 6. Periodically publish actual current to uORB (at lower rate, e.g., 100 Hz)
+    if (++_publish_counter >= _publish_divider) {
+        _publish_counter = 0;
+        motor_current_s msg{};
+        msg.timestamp = hrt_absolute_time();
+        msg.current[0] = i_actual;
+        _current_pub.publish(msg);
+    }
+}
 ```
-Command > 0:  DIR GPIO = HIGH (forward), PWM duty = |command| * max_duty
-Command < 0:  DIR GPIO = LOW (reverse),  PWM duty = |command| * max_duty
-Command = 0:  PWM duty = 0 (brake via DRV8874 slow decay)
+
+**Current PI parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `DRV_CUR_KP` | Float | 0.5 | Current loop proportional gain (duty per Amp error) |
+| `DRV_CUR_KI` | Float | 50.0 | Current loop integral gain (higher = faster tracking) |
+| `DRV_MAX_DUTY` | Float | 0.95 | Maximum PWM duty cycle (0-1) |
+| `DRV_PWM_FREQ` | Int | 20000 | PWM frequency (Hz) |
+
+**Hardware interface:**
+```
+i_desired > 0:  DIR GPIO = HIGH (forward), PWM duty from current PI output
+i_desired < 0:  DIR GPIO = LOW  (reverse), PWM duty from current PI output
+i_desired = 0:  PWM duty = 0 (brake via DRV8874 slow decay)
 ```
 
 **Additional functions:**
 - Set SLEEP GPIO HIGH on startup (after 1ms wake delay), LOW on shutdown
-- Read FAULT GPIO -- if LOW, publish fault event and optionally disable motor
-- Read CS ADC -- publish motor current to `battery_status` or custom topic
+- Read FAULT GPIO -- if LOW, publish fault event and disable motor immediately
+- ADC sampling synchronized to PWM midpoint (center of ON period) for cleanest current measurement
 - PWM frequency: 20 kHz (configured via FlexPWM timer)
 
-**Current sense (from Pololu CS pin):**
-```cpp
-float current_amps = adc_voltage / 1.133f;  // Pololu: 2.49k RIPROPI, ~1.1 V/A
+**CS pin hardware path:**
+```
+DRV8874 IPROPI → Pololu 2.49k to GND → CS pin → R6 (1k) + C9 (10nF) → Teensy ADC
+                                         ~1.1 V/A    fc = 15.9 kHz
 ```
 
 ### 7.3 Wheel Encoder Module (Optional)
@@ -545,45 +629,57 @@ float current_amps = adc_voltage / 1.133f;  // Pololu: 2.49k RIPROPI, ~1.1 V/A
 ```
 +------------------+       +------------------+       +------------------+
 | ICM-20948 Driver |       | EKF2 Estimator   |       | Balance Control  |
-| (existing PX4)   |       | (existing PX4)   |       | (CUSTOM MODULE)  |
-|                  |       |                  |       |                  |
-| sensor_accel --->|------>| vehicle_attitude->|------>| actuator_motors->|
-| sensor_gyro  --->|------>|                  |       | balance_status ->|
-| sensor_mag   --->|------>|                  |       |                  |
-+------------------+       +------------------+       +--------+---------+
-                                                               |
-                                                               v
-+------------------+       +------------------+       +------------------+
-| QGroundControl   |       | Logger (uLog)    |       | DRV8874 Driver   |
-| (existing PX4)   |       | (existing PX4)   |       | (CUSTOM MODULE)  |
-|                  |       |                  |       |                  |
-| parameter_update |       | <-- all topics   |       | actuator_motors  |
-| MAVLink telem    |       |     to SD card   |       |   -> PWM + GPIO  |
-+------------------+       +------------------+       |   -> motor current|
-                                                       +------------------+
-                                                               |
-                                                               v
-                                                       +------------------+
-                                                       | Encoder Module   |
-                                                       | (CUSTOM MODULE)  |
-                                                       |                  |
+| (existing PX4)   |       | (existing PX4)   |       | (CUSTOM: outer)  |
+|                  |       |                  |       |  500-1000 Hz     |
+| sensor_accel --->|------>| vehicle_attitude->|------>|                  |
+| sensor_gyro  --->|------>|                  |       | actuator_motors->|
+| sensor_mag   --->|------>|                  |       | (current cmds)   |
++------------------+       +------------------+       | balance_status ->|
+                                                       +--------+---------+
+                                                                |
+                           +------------------+                 v
+                           | PM02D INA226     |       +------------------+
+                           | (existing PX4)   |       | DRV8874 Driver   |
+                           |  10-50 Hz        |       | (CUSTOM: inner)  |
+                           |  I2C bus 0       |       |  10-20 kHz       |
+                           |                  |       |                  |
+                           | battery_status ->|       | actuator_motors  |
+                           +------------------+       |  + CS pin ADC    |
+                                                       |  = Current PI    |
++------------------+       +------------------+       |  -> PWM + GPIO   |
+| QGroundControl   |       | Logger (uLog)    |       | motor_current -> |
+| (existing PX4)   |       | (existing PX4)   |       +------------------+
+|                  |       |                  |                |
+| parameter_update |       | <-- all topics   |                v
+| MAVLink telem    |       |     to SD card   |       +------------------+
++------------------+       +------------------+       | Encoder Module   |
+                                                       | (CUSTOM)         |
                                                        | wheel_encoders ->|
-                                                       | (optional: feed  |
-                                                       |  back to EKF2)   |
                                                        +------------------+
+```
+
+**Signal flow for torque control:**
+```
+EKF2            Balance PID          DRV8874 Current PI         Hardware
+(500 Hz)        (500-1000 Hz)        (10-20 kHz)
+
+pitch ──→ error ──→ I_desired ──→ I_error ──→ PWM duty ──→ DRV8874 EN pin
+                                     ↑
+                              I_actual (CS pin ADC)
 ```
 
 **Existing PX4 modules** (no code changes needed):
 - ICM-20948 SPI driver (accel + gyro + mag)
 - EKF2 attitude estimator
+- INA226 power monitor (PM02D on I2C, separate bus)
 - MAVLink (telemetry over USB)
 - Logger (uLog to SD card)
 - Parameter system
 - Commander (arming, state machine)
 
 **Custom modules to write** (3 total):
-1. `balance_control` -- PID/LQR inner loop (~200 lines)
-2. `drv8874` -- PWM + GPIO motor driver (~150 lines)
+1. `balance_control` -- Outer loop PID, outputs current commands (~200 lines)
+2. `drv8874` -- Inner current PI loop + PWM/GPIO motor driver (~250 lines)
 3. `quadrature_encoder` -- wheel odometry (~100 lines, optional)
 
 ---
@@ -678,32 +774,45 @@ These are available at the EKF2 output rate (typically 250-500 Hz). For higher r
 - [ ] Verify `vehicle_attitude` topic publishes valid pitch/roll/yaw
 - [ ] Tilt the board by hand; confirm pitch angle tracks correctly in QGroundControl
 
-### Phase 3: Motor Driver Module
-- [ ] Write `drv8874` actuator module
+### Phase 3: Motor Driver -- Open-Loop PWM First
+- [ ] Write basic `drv8874` module (PWM + GPIO only, no current loop yet)
 - [ ] Configure FlexPWM timers for 20 kHz on Pins 2 and 5
 - [ ] Configure DIR GPIOs (Pins 3, 6) and SLEEP GPIOs (Pins 29, 30)
 - [ ] Test: subscribe to `actuator_motors`, verify motors spin in correct direction
-- [ ] Add FAULT GPIO monitoring and CS ADC current reading
+- [ ] Add FAULT GPIO monitoring
+- [ ] Verify CS pin ADC reads valid current values (`listener motor_current`)
 
-### Phase 4: Balance Controller Module
+### Phase 4: Balance Controller -- Open-Loop (PWM) Balancing
 - [ ] Write `balance_control` module with PID controller
-- [ ] Subscribe to `vehicle_attitude`, publish to `actuator_motors`
+- [ ] Subscribe to `vehicle_attitude`, publish to `actuator_motors` (as PWM duty, not current)
 - [ ] Define tuning parameters (BAL_PITCH_P/I/D)
 - [ ] Initial bench test: hold robot, verify motors respond correctly to tilt
-- [ ] First free-standing balance test
+- [ ] First free-standing balance test with PWM control
 - [ ] Tune PID gains via QGroundControl parameter interface
+- [ ] **Milestone: Robot balances with open-loop PWM control**
 
-### Phase 5: Encoder + Odometry (Optional)
+### Phase 5: Inner Current Loop -- Torque Control Upgrade
+- [ ] Add current PI controller inside `drv8874` driver (10-20 kHz timer ISR)
+- [ ] Configure ADC to sample CS pin synchronized to PWM midpoint
+- [ ] Verify R6=1k + C9=10nF filter provides clean current signal (fc=15.9 kHz)
+- [ ] Tune current loop: `DRV_CUR_KP`, `DRV_CUR_KI` with motor locked/stalled
+- [ ] Switch `balance_control` output from PWM duty to current command (Amps)
+- [ ] Test: robot should balance with more consistent torque across battery voltage range
+- [ ] Compare uLog data: PWM control vs torque control (pitch variance, motor current)
+- [ ] **Milestone: Robot balances with closed-loop torque control**
+
+### Phase 6: Encoder + Odometry (Optional)
 - [ ] Write quadrature encoder module for Pins 0/1 and 31/32
 - [ ] Publish `wheel_encoders` topic
 - [ ] Optionally feed wheel speed back to EKF2 for velocity estimation
 - [ ] Use encoder data for position hold / drive-to-waypoint
 
-### Phase 6: Polish
-- [ ] Configure uLog to record balance_status, actuator_motors, vehicle_attitude
+### Phase 7: Polish
+- [ ] Configure uLog to record balance_status, motor_current, actuator_motors, vehicle_attitude
 - [ ] Review logs in PX4 Flight Review for tuning analysis
 - [ ] Add safety: disable motors if pitch exceeds tilt limit (e.g., > 45 deg = fallen over)
 - [ ] Add arming logic via Commander (button or QGC command to start balancing)
+- [ ] Test battery voltage sweep: verify torque control maintains balance from 8.4V down to 6.0V
 
 ---
 

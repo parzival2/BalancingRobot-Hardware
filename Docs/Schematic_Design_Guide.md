@@ -15,12 +15,12 @@ All electronics reside on a **single PCB** divided into three logical zones sepa
 |  | DRV8874     |  :                           :  | DRV8874     |          |
 |  | carrier (A) |  :   [Teensy 4.1]            :  | carrier (B) |          |
 |  | (15x18mm)   |  :                           :  | (15x18mm)   |          |
-|  +-------------+  :   [PM02 sense resistors]  :  +-------------+          |
+|  +-------------+  :                           :  +-------------+          |
 |  [nFAULT R]       :                           :  [nFAULT R]              |
 |  [IPROPI filter]  +---------keep-out---------+   [IPROPI filter]         |
 |  [Motor EMI caps]                                [Motor EMI caps]         |
 |                                                                           |
-|  [J3 Motor+Enc A]        [J1 PM02 Power]         [J4 Motor+Enc B]       |
+|  [J3 Motor+Enc A]       [J1 PM02D Power]         [J4 Motor+Enc B]       |
 |                           [J2 Battery VM]                                 |
 |   (M3)               (M3)            (M3)               (M3)             |
 +===========================================================================+
@@ -31,14 +31,30 @@ All electronics reside on a **single PCB** divided into three logical zones sepa
   Pololu carriers soldered directly via 0.1" pin headers for vibration resistance.
 ```
 
-**External connectors (JST-PH 2.0mm only):**
+**External connectors:**
 
-| Connector | Type | Function | Location |
-|-----------|------|----------|----------|
-| J1 | JST-PH 4-pin | PM02 power input (5V, GND, V_SENSE, I_SENSE) | Bottom center |
-| J2 | JST-PH 2-pin | Battery VM input (7.4V raw, for both motor drivers) | Bottom center |
-| J3 | JST-PH 6-pin | Motor A + Encoder A (mates with Hiwonder cable) | Left edge |
-| J4 | JST-PH 6-pin | Motor B + Encoder B (mates with Hiwonder cable) | Right edge |
+| Connector | Type | Function | Current | Location |
+|-----------|------|----------|---------|----------|
+| J1 | JST-PH 6-pin (S6B-PH-K-S) | PM02D power (5.2V) + I2C sense | ~0.3A | Bottom center |
+| J2 | **XT30 male (PCB mount)** | Battery VM input (7.4V raw) | **2.8A peak** | Bottom center |
+| J3 | JST-PH 6-pin (S6B-PH-K-S) | Motor A + Encoder A (Hiwonder) | 1.4A motor + signal | Left edge |
+| J4 | JST-PH 6-pin (S6B-PH-K-S) | Motor B + Encoder B (Hiwonder) | 1.4A motor + signal | Right edge |
+| J5 | JST-PH 4-pin (S4B-PH-K-S) | UART2 (companion board: RPi/BBB) | Signal only | Top edge |
+
+> **Why XT30 for J2?** The battery VM input carries up to 2.8A peak (both motors at stall).
+> JST-PH is only rated for 2A per contact -- insufficient for motor power. XT30 is rated
+> for 30A, is compact (similar footprint to a 2-pin JST-XH), and is widely available at
+> any RC hobby shop.
+>
+> **Why JST-PH for J1?** The PM02D comes with a Molex CLIK-Mate cable, but Molex headers
+> are hard to source. Cut the PM02D cable and re-crimp JST-PH contacts onto the 6 wires.
+> The current on J1 is only ~0.3A (Teensy + accessories), well within JST-PH's 2A rating.
+>
+> **J3/J4 motor current through JST-PH:** Each motor draws 1.4A at stall. The motor power
+> pins (M1, M2) on J3/J4 are within the JST-PH 2A rating for normal operation (0.65A rated).
+> At stall, 1.4A is under the 2A limit. If you want more margin, the Hiwonder motors come
+> with PH2.0 cables which are JST-PH compatible -- so this is matched to the motor's own
+> connector rating.
 
 ---
 
@@ -52,11 +68,10 @@ All electronics reside on a **single PCB** divided into three logical zones sepa
 |-----|-----------|-------------|-----|
 | U1 | Teensy 4.1 | ARM Cortex-M7 @ 600 MHz, with pin headers | 1 |
 | U2 | Adafruit ICM-20948 | 9-DoF IMU breakout (Accel/Gyro/Mag) | 1 |
-| J1 | JST-PH 4-pin (S4B-PH-K-S) | PM02 power input | 1 |
-| R1, R2 | 10 kOhm 1/4W 1% | Voltage divider for V_SENSE | 2 |
-| R3 | 10 kOhm 1/4W | Current sense load resistor | 1 |
+| J1 | JST-PH 6-pin (S6B-PH-K-S) | PM02D power + I2C (re-crimp PM02D cable) | 1 |
 | C1 | 100 nF ceramic X7R | Decoupling on Teensy VIN | 1 |
 | C2 | 10 uF ceramic X5R | Bulk cap on Teensy VIN | 1 |
+| J5 | JST-PH 4-pin (S4B-PH-K-S) | UART2 header for companion board (RPi/BBB) | 1 |
 
 **Motor Zone A (Left) -- Identical to Motor Zone B**
 
@@ -70,14 +85,14 @@ The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM byp
 | C7a / C7b | 100 nF ceramic | Motor terminal EMI cap (OUT1/M1) | 1 |
 | C8a / C8b | 10 nF ceramic | Motor terminal EMI cap (OUT2/M2) | 1 |
 | R4a / R4b | 10 kOhm 1/4W | FAULT pullup to 3.3V (not on Pololu board) | 1 |
-| R6a / R6b | 10 kOhm 1/4W | CS low-pass filter resistor (optional) | 1 |
-| C9a / C9b | 10 nF ceramic | CS low-pass filter cap (optional) | 1 |
+| R6a / R6b | 1 kOhm 1/4W | CS low-pass filter resistor (for torque control) | 1 |
+| C9a / C9b | 10 nF ceramic | CS low-pass filter cap (fc = 15.9 kHz with 1k R6) | 1 |
 
 **Shared / Board-Level**
 
 | Ref | Component | Description | Qty |
 |-----|-----------|-------------|-----|
-| J2 | JST-PH 2-pin (S2B-PH-K-S) | Battery VM input (shared, splits to both zones) | 1 |
+| J2 | XT30 male PCB-mount | Battery VM input (7.4V, 2.8A peak, splits to both zones) | 1 |
 | FB1, FB2 | Ferrite bead 600 Ohm @ 100 MHz | 3.3V isolation into each motor zone (optional) | 2 |
 | -- | 0.1" pin headers (13-pin) | For mounting each Pololu carrier to main PCB | 2 sets |
 | -- | M3 mounting holes (3.2 mm) | Board corners, symmetric | 4 |
@@ -96,7 +111,7 @@ The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM byp
 
 | Teensy Pin | Arduino Name | Function | Connected To | Notes |
 |------------|-------------|----------|--------------|-------|
-| **VIN** | VIN | 5V power input | J1 Pin 1 (PM02 5V) | 3.6-5.5V; PM02 outputs 5.2V |
+| **VIN** | VIN | 5V power input | J1 Pins 1+2 (PM02D VCC) | 3.6-5.5V; PM02D outputs 5.2V |
 | **GND** | GND | System ground | Logic zone ground pour | Star-ground point connects all zones |
 | **3V3** | 3.3V | Regulated 3.3V out | U2, encoders, VREF, nFAULT pullups | 250 mA max (see power budget) |
 | | | | | |
@@ -107,9 +122,9 @@ The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM byp
 | **10** | D10 / CS0 | SPI0 CS | U2 CS (ICM-20948 nCS) | Chip select, active low |
 | **17** | A3 | IMU Interrupt | U2 INT | Data-ready, INPUT_PULLUP |
 | | | | | |
-| | | **--- PM02 Power ---** | | |
-| **14** | A0 | Analog input | J1 Pin 3 via R1/R2 divider | Battery voltage sense |
-| **15** | A1 | Analog input | J1 Pin 4 via R3 | Battery current sense |
+| | | **--- PM02D Power (I2C) ---** | | |
+| **19** | A5 / SCL0 | I2C0 SCL | J1 Pin 3 (PM02D SCL) | INA226 voltage/current monitor |
+| **18** | A4 / SDA0 | I2C0 SDA | J1 Pin 4 (PM02D SDA) | INA226 I2C address 0x40 |
 | | | | | |
 | | | **--- Motor A (Left Zone, Pololu A) ---** | | |
 | **2** | D2 | PWM output | Pololu A: EN/IN1 | FlexPWM4_PWMA02, speed |
@@ -128,6 +143,10 @@ The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM byp
 | **32** | D32 | Digital input (IRQ) | J4 Pin 4 -> encoder B phase B | Quadrature channel B |
 | **21** | A7 | Analog input | Pololu B: CS via R6b/C9b filter | Motor B current (~1.1 V/A) |
 | **34** | D34 | Digital input | Pololu B: FAULT | Fault, active low, ext. pullup |
+| | | | | |
+| | | **--- UART2 (Companion Board) ---** | | |
+| **8** | D8 / TX2 | UART TX | J5 Pin 1 (TX) | Serial2 TX, up to 6 Mbit/s |
+| **7** | D7 / RX2 | UART RX | J5 Pin 2 (RX) | Serial2 RX, up to 6 Mbit/s |
 
 ### ICM-20948 Breakout (U2) Pin Connections (SPI Mode)
 
@@ -146,29 +165,67 @@ The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM byp
 > on SCL/SDA remain present but do not interfere with SPI operation -- they simply pull the
 > lines high when idle, which is normal SPI idle state (CPOL=0).
 
-### PM02 Power Module (J1) -- JST-PH 4-Pin
+### PM02D Power Module (J1) -- Molex CLIK-Mate 6-Pin
 
-| J1 Pin | Signal | Connected To | Notes |
-|--------|--------|-------------|-------|
-| 1 | +5V (regulated) | Teensy VIN | PM02 regulated 5.2V output |
-| 2 | GND | Logic zone GND | |
-| 3 | V_SENSE | R1/R2 divider -> Teensy A0 (Pin 14) | Battery voltage analog signal |
-| 4 | I_SENSE | R3 -> Teensy A1 (Pin 15) | Battery current analog signal |
+The Holybro PM02D uses a **Molex CLIK-Mate 2.0mm pitch** connector (not JST-PH). The PM02D provides regulated 5.2V power and battery voltage/current monitoring via **I2C** (using an on-board INA226 power monitor IC).
 
-> **IMPORTANT NOTE:** The documentation in the Docs folder is for the **PM02D** variant,
-> which uses **I2C** (SCL/SDA on pins 3/4) for voltage/current monitoring instead of analog
-> outputs. If you are using the PM02D:
-> - Connect PM02D SCL to Teensy Pin 19 (SCL0 / Wire) and SDA to Teensy Pin 18 (SDA0 / Wire).
->   Since the IMU now uses SPI, the I2C0 bus is free for PM02D.
-> - Pins A0/A1 become unused for PM02 sensing
-> - The I2C address for the PM02D INA226 is typically 0x40
+**Connector:** JST-PH 6-pin, S6B-PH-K-S (2.0mm pitch, vertical, through-hole)
+**Cable:** Cut the PM02D's stock Molex CLIK-Mate connector off the cable and re-crimp with JST-PH contacts (SPH-002T-P0.5S) into a PHR-6 housing. Maintain the original wire order.
 
-### Battery Input (J2) -- JST-PH 2-Pin
+| J1 Pin | Signal | Wire Color (typical) | Connected To | Notes |
+|--------|--------|---------------------|-------------|-------|
+| 1 | VCC | Red | Teensy VIN | 5.2V regulated, 3A max |
+| 2 | VCC | Red | Teensy VIN (parallel) | Both VCC pins tied together on PCB |
+| 3 | SCL | Yellow | Teensy Pin 19 (SCL0) | I2C clock, 400 kHz |
+| 4 | SDA | Green | Teensy Pin 18 (SDA0) | I2C data |
+| 5 | GND | Black | Logic zone GND | |
+| 6 | GND | Black | Logic zone GND (parallel) | Both GND pins tied together on PCB |
+
+**Wiring diagram:**
+
+```
+PM02D Module                     J1 (Molex 6-pin)              Teensy 4.1
+                                 on your PCB
+  XT60 ←→ Battery
+    |                           ┌──────────┐
+    |    ┌──5.2V reg──→ Pin 1 (VCC) ──┬──────────────→ VIN
+    |    |              Pin 2 (VCC) ──┘     C1(100nF)──┐
+    |    |                              C2(10uF)──┐    │
+    |    │              Pin 3 (SCL) ──────────────→ Pin 19 (SCL0 / Wire)
+    └──INA226──→        Pin 4 (SDA) ──────────────→ Pin 18 (SDA0 / Wire)
+         |              Pin 5 (GND) ──┬──────────────→ GND
+         └──────→       Pin 6 (GND) ──┘               │
+                        └──────────┘               GND ┘
+```
+
+**I2C details:**
+- **IC:** INA226 power monitor (on PM02D board)
+- **I2C address:** 0x40 (default)
+- **I2C bus:** Wire / I2C0 (Teensy Pins 18/19). This bus is free because the IMU uses SPI.
+- **Bus speed:** 400 kHz (Fast Mode)
+- **Pull-ups:** The PM02D has on-board I2C pull-ups. No additional pull-ups needed on your PCB.
+- **Data available:** Battery voltage (mV), battery current (mA), power (mW)
+- **Polling rate:** 10-50 Hz is sufficient for battery monitoring (does not affect control loop)
+
+> **Why I2C instead of analog?** The PM02D's INA226 provides higher accuracy (better than 5%)
+> with no calibration needed -- no voltage divider ratios or mV/A sensitivities to measure.
+> The PX4 INA226 driver reads voltage and current automatically and publishes to `battery_status`.
+
+> **No interference with balance control:** The I2C bus (Pins 18/19) is completely independent
+> of the SPI bus (Pins 10-13) used by the IMU. The INA226 driver runs on a low-priority work
+> queue at 10-50 Hz. It cannot block or delay the 1 kHz balance loop or the 10-20 kHz current
+> control loop.
+
+### Battery Input (J2) -- XT30 Male PCB-Mount
+
+XT30 is used here because the battery VM input carries up to 2.8A peak (both motors at stall). JST-PH is only rated for 2A per contact -- insufficient. XT30 is rated for 30A continuous.
 
 | J2 Pin | Signal | Connected To | Notes |
 |--------|--------|-------------|-------|
-| 1 | VM+ | Motor zone A and B VM rails (via copper pour) | 7.4V raw battery, 2.8A peak |
-| 2 | GND | Motor zone ground pours | |
+| + | VM+ | Motor zone A and B VM rails (via copper pour) | 7.4V raw battery, 2.8A peak |
+| - | GND | Motor zone ground pours | |
+
+**Cable:** Solder an XT30 female pigtail to the PM02D's XT60 battery pass-through output. Use 18-20 AWG silicone wire, keep under 150 mm.
 
 ### Motor + Encoder Connectors (J3, J4) -- JST-PH 6-Pin
 
@@ -183,6 +240,43 @@ These directly mate with the Hiwonder JGA27-310R20 motor cable (PH2.0 6-pin).
 | 5 | Wire 5 | G (encoder ground) | GND |
 | 6 | Wire 6 | M1 (motor +) | DRV8874 OUT1 (Pin 8) via EMI cap to GND |
 
+### UART2 Companion Board Header (J5) -- JST-PH 4-Pin
+
+For high-speed serial communication with a Raspberry Pi, BeagleBone, or other companion computer. Uses Teensy Serial2 (hardware UART, up to 6 Mbit/s).
+
+| J5 Pin | Signal | Teensy Pin | Connected To | Notes |
+|--------|--------|-----------|-------------|-------|
+| 1 | TX | Pin 8 (TX2) | Companion RX | Teensy transmit -> companion receive |
+| 2 | RX | Pin 7 (RX2) | Companion TX | Teensy receive <- companion transmit |
+| 3 | GND | GND | Companion GND | Signal ground (required for UART) |
+| 4 | 3V3 | 3.3V | Companion 3V3 ref | Optional: voltage reference, NOT for powering companion |
+
+> **Voltage compatibility:** Teensy 4.1 UART is **3.3V logic**, which directly matches:
+> - Raspberry Pi GPIO UART (3.3V) -- connect directly, no level shifter
+> - BeagleBone GPIO UART (3.3V) -- connect directly, no level shifter
+> - Arduino 5V boards -- **NEED level shifter** (Teensy pins are NOT 5V tolerant)
+>
+> **Pin 4 (3V3) is a reference only.** Do NOT use it to power the companion board
+> (Teensy 3.3V output is limited to 250 mA). Power the RPi/BBB from its own supply.
+> The 3V3 pin is provided so the companion can detect voltage level if needed.
+
+**Wiring diagram:**
+```
+Teensy 4.1                J5 (JST-PH 4-pin)        Companion Board
+                          on your PCB               (RPi / BBB)
+
+Pin 8 (TX2) ─────────── Pin 1 (TX) ────────────── RX (GPIO input)
+Pin 7 (RX2) ─────────── Pin 2 (RX) ────────────── TX (GPIO output)
+GND ─────────────────── Pin 3 (GND) ───────────── GND
+3V3 ─────────────────── Pin 4 (3V3) ───────────── (optional ref)
+```
+
+**Use cases:**
+- **MAVLink telemetry** -- PX4 MAVLink over Serial2 to companion running MAVSDK/ROS2
+- **Offboard control** -- Companion sends high-level commands (waypoints, velocity targets)
+- **Sensor fusion** -- Companion sends camera/LIDAR data to Teensy for obstacle avoidance
+- **Logging** -- High-speed data streaming to companion for real-time analysis
+
 ---
 
 ## 3. Netlist Wiring Guide -- Logic Zone (Center)
@@ -190,11 +284,11 @@ These directly mate with the Hiwonder JGA27-310R20 motor cable (PH2.0 6-pin).
 ### 3.1 Power Distribution
 
 ```
-PM02 5V (J1 Pin 1) ----+---- C2 (10uF) ----+---- GND (logic zone)
-                        |                    |
-                        +---- C1 (100nF) ----+
-                        |
-                        +---- Teensy VIN
+PM02D 5.2V (J1 Pins 1+2) ----+---- C2 (10uF) ----+---- GND (logic zone)
+                              |                    |
+                              +---- C1 (100nF) ----+
+                              |
+                              +---- Teensy VIN
 
 Teensy 3V3 output -----+---- ICM-20948 VIN (U2)
                         |
@@ -240,32 +334,31 @@ ICM-20948 INT ---- Teensy Pin 17 (A3)
 - Configure as `INPUT_PULLUP` in firmware (INT is open-drain active-low).
 - Use for data-ready interrupt to trigger IMU reads at precise intervals.
 
-### 3.4 PM02 Analog Sensing (Original PM02 with Analog Outputs)
+### 3.4 PM02D Power Monitoring (I2C)
 
-#### Battery Voltage Sense (V_SENSE)
-
-```
-J1 Pin 3 (V_SENSE) ---- R1 (10K) ----+---- Teensy Pin 14 (A0)
-                                       |
-                                       R2 (10K)
-                                       |
-                                       GND
-```
-
-This 2:1 divider provides safety margin. Calibrate in firmware:
-```
-V_battery = analogRead(A0) * (3.3 / 4095.0) * CALIBRATION_FACTOR;
-```
-
-If the PM02 V_SENSE is already scaled for 3.3V ADC, connect directly to A0 and add only a 100 nF filter cap to GND.
-
-#### Battery Current Sense (I_SENSE)
+The PM02D uses I2C for battery voltage and current monitoring. No analog pins or divider resistors are needed.
 
 ```
-J1 Pin 4 (I_SENSE) ---- Teensy Pin 15 (A1)
-                    |
-                    +---- 100nF cap ---- GND  (noise filter)
+J1 Pin 3 (SCL) ---- Teensy Pin 19 (SCL0 / Wire)
+J1 Pin 4 (SDA) ---- Teensy Pin 18 (SDA0 / Wire)
 ```
+
+- **I2C bus:** Wire / I2C0, 400 kHz (Fast Mode)
+- **No external pull-ups needed** -- the PM02D has on-board I2C pull-ups.
+- **I2C address:** 0x40 (INA226 default)
+- **No bus conflict:** The IMU uses SPI (Pins 10-13), so I2C0 (Pins 18/19) is dedicated to the PM02D.
+- Route SCL and SDA traces as a pair, away from PWM and motor traces.
+- Keep traces within the logic zone -- they do not need to cross any keep-out area.
+
+**In PX4, start the driver in `rc.board_sensors`:**
+```bash
+# PM02D power monitor on I2C bus 0, INA226 at address 0x40
+ina226 -I -b 0 -a 64 start    # 64 = 0x40 decimal
+```
+
+This publishes to `battery_status` uORB topic. QGroundControl displays battery voltage, current, and percentage automatically.
+
+**Freed pins:** Teensy A0 (Pin 14) and A1 (Pin 15) are now available for other uses (e.g., additional ADC inputs, or leave unconnected).
 
 ### 3.5 Motor Control Signals (PCB traces to motor zones)
 
@@ -296,7 +389,22 @@ Motor A (traces to left zone):            Motor B (traces to right zone):
 - The Hiwonder encoders have built-in pull-up shaping circuits; no external pullups needed.
 - 13 PPR x 20:1 gear ratio x 4 (quadrature) = **1040 counts per output revolution**.
 
-### 3.7 Traces Crossing Keep-Out Zones
+### 3.7 UART2 Companion Board Interface (J5)
+
+```
+Teensy Pin 8  (TX2) ---- J5 Pin 1 (TX)
+Teensy Pin 7  (RX2) ---- J5 Pin 2 (RX)
+GND                  ---- J5 Pin 3 (GND)
+Teensy 3V3           ---- J5 Pin 4 (3V3)
+```
+
+- Serial2 (UART2): hardware UART, up to **6 Mbit/s**.
+- Pins 7 and 8 have no conflicts with any other function in this design.
+- Route TX/RX traces within the logic zone. Keep away from PWM and SPI traces.
+- Place J5 on the **top edge** of the board for easy cable access to the companion board.
+- In PX4, configure MAVLink on Serial2: `mavlink start -d /dev/ttyS1 -b 921600`
+
+### 3.8 Traces Crossing Keep-Out Zones
 
 The following traces must cross from the logic zone into each motor zone. These are the **only** connections bridging the keep-out areas:
 
@@ -322,161 +430,270 @@ The following traces must cross from the logic zone into each motor zone. These 
 
 ---
 
-## 4. Netlist Wiring Guide -- Motor Zones (Left & Right)
+## 4. DRV8874 Motor Driver Wiring -- Complete Diagram
 
-Both motor zones are **mirror images** of each other. The schematic is identical; only the Teensy pin assignments differ (see pin mapping table).
+Both motor zones are **mirror images**. The schematic is identical; only the Teensy pin numbers differ. This section shows the **complete wiring for one motor channel** with every pin accounted for.
 
-### 4.1 Pololu DRV8874 Carrier -- What's Already On-Board
+### 4.1 What's On the Pololu Carrier vs What You Add
 
-Before wiring, understand what the Pololu carrier provides so you don't duplicate components:
+| On Pololu Carrier (do NOT add) | You Add on Main PCB |
+|-------------------------------|---------------------|
+| DRV8874 IC | C4: 100uF bulk cap near VIN |
+| VM bypass cap (100nF) | R4: 10k FAULT pullup to 3.3V |
+| Charge pump caps (storage + flying) | R6: 1k CS filter resistor |
+| Reverse-voltage MOSFET | C9: 10nF CS filter cap |
+| RIPROPI 2.49k to GND (CS = ~1.1 V/A) | C7: 100nF EMI cap at motor connector |
+| IMODE 20k pulldown | C8: 10nF EMI cap at motor connector |
+| VREF 10k pullup to SLEEP | PMODE trace to GND |
 
-| Feature | On Pololu Carrier | External (on main PCB) |
-|---------|-------------------|----------------------|
-| DRV8874 IC | Yes (pre-soldered HTSSOP) | -- |
-| VM bypass cap (100nF) | Yes | -- |
-| Charge pump storage cap (100nF) | Yes | -- |
-| Charge pump flying cap (22nF) | Yes | -- |
-| Reverse-voltage protection MOSFET | Yes (between VIN and VM) | -- |
-| RIPROPI / CS resistor | Yes (2.49 kOhm to GND) | -- |
-| IMODE pulldown | Yes (20 kOhm to GND) | -- |
-| VREF pullup | Yes (10 kOhm to SLEEP pin) | -- |
-| VM bulk electrolytic cap | No | C4 (100uF 16V) recommended |
-| FAULT pullup resistor | No | R4 (10k to 3.3V) required |
-| CS low-pass filter | No | R6 + C9 (optional, recommended) |
-| Motor EMI caps | No | C7 + C8 at JST-PH connector |
-
-### 4.2 Pololu Carrier Pinout (13 pins on 0.1" headers)
+### 4.2 Complete Wiring Diagram (One Motor Channel)
 
 ```
-  Motor/Power side:          Logic/Control side:
-  +--------------+           +--------------+
-  | VIN          |           | EN/IN1       |  <- PWM speed (from Teensy)
-  | GND          |           | PH/IN2       |  <- Direction (from Teensy)
-  | VM           |           | PMODE        |  <- Tie LOW for PH/EN mode
-  | OUT1         |           | SLEEP        |  <- Enable (from Teensy, active HIGH)
-  | OUT2         |           | VREF         |  <- (leave floating, pulled to SLEEP on-board)
-  +--------------+           | IMODE        |  <- (leave floating, pulled LOW on-board)
-                             | FAULT        |  <- Fault output (add pullup)
-                             | CS           |  <- Current sense (~1.1V/A)
-                             +--------------+
+                        MAIN PCB - ONE MOTOR ZONE
+ ═══════════════════════════════════════════════════════════════════════════
+
+   From J2 (XT30)                    POLOLU DRV8874 CARRIER
+   Battery 7.4V                     ┌─────────────────────────┐
+        │                           │                         │
+        ├──── C4 (100uF) ── GND    │  LEFT ROW    RIGHT ROW  │
+        │                           │  (Logic)     (Motor)    │
+        │                           │                         │
+        └───────────────────────────┤→ [1] VM      VIN [8] ←──┤── Battery 7.4V
+                                    │                         │     (from J2)
+   GND (motor zone pour) ──────────┤→ [2] GND     GND [9] ←──┤── GND
+                                    │                         │
+   Teensy Pin 2 (PWM_A) ───────────┤→ [3] EN/IN1  OUT1[10]───┤──┬── J3 Pin 6 (M1)
+     or Pin 5 (PWM_B)              │                         │  │
+                                    │                         │  C7 (100nF)
+   Teensy Pin 3 (DIR_A) ───────────┤→ [4] PH/IN2  OUT2[11]───┤──┤── J3 Pin 1 (M2)
+     or Pin 6 (DIR_B)              │                         │  │
+                                    │                         │  C8 (10nF)
+   GND (motor zone pour) ──────────┤→ [5] PMODE   IMODE[12]──┤── NC
+                  ▲                 │        ▲                │  (20k pulldown
+            CRITICAL!               │    Tie LOW!             │   on-board)
+         Must be GND                │                         │
+         NOT floating!              │                         │
+                                    │                         │
+   Teensy Pin 29 (SLEEP_A) ────────┤→ [6] SLEEP   FAULT[13]──┤──┬── Teensy Pin 33
+     or Pin 30 (SLEEP_B)           │                         │  │   (FAULT_A)
+                                    │                         │  │   or Pin 34
+                                    │                         │  R4 (10k)
+                                    │                         │  │
+                                    │                    3.3V ┤──┘
+                                    │                         │
+                                    │  [7] VREF      CS [14]──┤──── R6 (1k) ──┬── Teensy Pin 20
+                                    │       │                 │               │   (CS_A / A6)
+                                    │      NC                 │          C9 (10nF) or Pin 21
+                                    │  (10k pullup            │               │   (CS_B / A7)
+                                    │   to SLEEP              │              GND
+                                    │   on-board)             │
+                                    └─────────────────────────┘
+
+
+   MOTOR CONNECTOR (J3 or J4, JST-PH 6-pin, mates with Hiwonder cable)
+   ┌──────────────────────────────────────────┐
+   │  Pin 1: M2 (motor -) ←── OUT2 + C8      │
+   │  Pin 2: V  (encoder 3.3V) ←── 3.3V      │
+   │  Pin 3: A  (encoder phase A) ──→ Teensy  │  Pin 0 (Enc_A) or Pin 31 (Enc_B)
+   │  Pin 4: B  (encoder phase B) ──→ Teensy  │  Pin 1 (Enc_A) or Pin 32 (Enc_B)
+   │  Pin 5: G  (encoder GND) ←── GND         │
+   │  Pin 6: M1 (motor +) ←── OUT1 + C7      │
+   └──────────────────────────────────────────┘
 ```
 
-### 4.3 Battery Power Input
+### 4.3 Pin-by-Pin Reference (Every Pololu Pin Accounted For)
+
+| Pololu Pin | Name | Connect To | Why |
+|-----------|------|-----------|-----|
+| **1** | VM | **Leave NC** | Motor supply AFTER reverse protection. Not needed; power enters via VIN. |
+| **2** | GND | **Motor zone GND pour** | Ground for DRV8874 power stage |
+| **3** | EN/IN1 | **Teensy PWM pin (2 or 5)** | Speed control. Apply 20 kHz PWM. Duty = speed. |
+| **4** | PH/IN2 | **Teensy GPIO (3 or 6)** | Direction. HIGH = forward, LOW = reverse. |
+| **5** | PMODE | **GND (motor zone pour)** | **CRITICAL.** Must be LOW to select PH/EN mode. If floating, wrong mode is latched! |
+| **6** | SLEEP | **Teensy GPIO (29 or 30)** | Enable. Drive HIGH to wake (1ms delay). LOW = sleep. Defaults to sleep (100k internal pulldown). |
+| **7** | VREF | **Leave NC** | 10k pullup to SLEEP on-board. VREF ≈ 3.3V. Sets current trip at 2.91A. No external connection needed. |
+| **8** | VIN | **Battery VM (7.4V from J2)** | Motor power input, through reverse-voltage MOSFET. Add C4 (100uF) nearby. |
+| **9** | GND | **Motor zone GND pour** | Second GND pin. Same net as pin 2. |
+| **10** | OUT1 | **J3/J4 Pin 6 (M1)** | Motor terminal 1. Add C7 (100nF) to GND at connector. |
+| **11** | OUT2 | **J3/J4 Pin 1 (M2)** | Motor terminal 2. Add C8 (10nF) to GND at connector. |
+| **12** | IMODE | **Leave NC** | 20k pulldown on-board = cycle-by-cycle chopping + auto retry OCP. No external connection needed. |
+| **13** | FAULT | **R4 (10k) to 3.3V + Teensy GPIO (33 or 34)** | Open-drain, active LOW. R4 pulls HIGH normally. Goes LOW on fault (OCP/UVLO/TSD). |
+| **14** | CS | **R6 (1k) + C9 (10nF) filter -> Teensy ADC (A6 or A7)** | Current sense output. ~1.1 V/A. Filter: fc = 15.9 kHz for torque control inner loop. |
+
+### 4.4 FAULT Pin Detail (Open-Drain Explained)
 
 ```
-J2 Pin 1 (VM+, 7.4V) ----[copper pour]----+---- Pololu A: VIN  [left zone]
-                                            |
-                                            +---- Pololu B: VIN  [right zone]
+         3.3V
+          │
+       R4 (10k)       ← YOU add this resistor on main PCB
+          │
+          ├──────────── Teensy Pin 33 or 34 (digital input)
+          │
+   Pololu FAULT pin
+          │
+     ┌────┴────┐
+     │ DRV8874 │
+     │ internal│
+     │         │
+     │  open   │
+     │  drain  │
+     │ MOSFET  │─── GND     ← only closes during a fault
+     └─────────┘
 
-J2 Pin 2 (GND) ----[copper pour]----+---- Motor zone A ground pour
-                                     |         (connects to Pololu A: GND)
-                                     |
-                                     +---- Motor zone B ground pour
-                                               (connects to Pololu B: GND)
+   Normal:  MOSFET open  → pin pulled to 3.3V by R4 → digitalRead() = HIGH
+   Fault:   MOSFET closed → pin shorted to GND       → digitalRead() = LOW
 ```
 
-- J2 is placed at the board bottom-center, between or adjacent to the motor zones. Heavy copper pours carry VM to each motor zone.
-- **J2 GND connects directly to the motor zone ground pours** (not to the logic pour). This ensures high-current motor return paths stay within the motor zones and exit through J2 back to the PM02 battery ground.
-- J1 GND connects to the **logic zone ground pour**. The PM02 closes the ground loop internally.
-- Trace/pour width for VM: **1.5 mm (60 mil) minimum** or copper pour (2.8A peak combined).
-- Place C4 (100uF bulk cap) between VIN and GND on the main PCB, within 10mm of each Pololu carrier's VIN pin.
-
-### 4.4 Pololu Carrier Wiring (per motor zone)
-
-#### Logic Inputs (from Teensy via zone-crossing traces)
+### 4.5 CS Pin Detail (Current Sense for Torque Control)
 
 ```
-Teensy PWM pin   ---- Pololu: EN/IN1     [PWM speed control]
-Teensy DIR pin   ---- Pololu: PH/IN2     [Direction control]
-Teensy SLEEP pin ---- Pololu: SLEEP      [Enable, active HIGH]
+   DRV8874 IPROPI pin (inside Pololu carrier)
+          │
+          │     ┌──────────────────────────────┐
+          │     │ On Pololu carrier (built-in) │
+          ├─────┤ 2.49k resistor to GND        │
+          │     │ Converts current to voltage   │
+          │     │ Output: ~1.1 V/A              │
+          │     └──────────────────────────────┘
+          │
+   Pololu CS pin (header pin 14)
+          │
+          │     ┌──────────────────────────────┐
+          │     │ YOU add on main PCB           │
+          ├─────┤ R6 (1k) ──┬── Teensy ADC     │
+          │     │            │   (A6 or A7)     │
+          │     │       C9 (10nF)               │
+          │     │            │                  │
+          │     │           GND                 │
+          │     │                               │
+          │     │ Low-pass filter               │
+          │     │ fc = 1/(2π × 1k × 10nF)      │
+          │     │    = 15.9 kHz                 │
+          │     └──────────────────────────────┘
+
+   At 0.65A (rated):  CS = 0.72V
+   At 1.40A (stall):  CS = 1.54V
+   At 2.91A (trip):   CS = 3.30V (VREF limit kicks in)
 ```
 
-> **SLEEP replaces nSLEEP in the pin naming.** The function is identical -- drive HIGH to
-> enable the driver, LOW for sleep mode. The Pololu board defaults to sleep (SLEEP pin
-> has internal 100k pulldown on the DRV8874 IC). You must actively drive it HIGH.
+### 4.6 Motor EMI Caps Detail (C7, C8 -- Why and Where)
 
-#### Mode Configuration
+Brushed DC motors generate broadband electrical noise from the commutator brush arcing. Every time a carbon brush breaks contact with a rotor winding, the collapsing magnetic field creates a voltage spike. This happens thousands of times per second.
 
+**Without caps -- noise enters the PCB:**
 ```
-Pololu: PMODE ---- GND (motor zone pour)    [PH/EN mode select]
-Pololu: IMODE ---- leave unconnected        [20k pulldown on-board = cycle-by-cycle + auto retry]
-Pololu: VREF  ---- leave unconnected        [10k pullup to SLEEP on-board]
-```
-
-- **PMODE must be tied LOW before SLEEP goes HIGH.** PMODE is latched on the rising edge of SLEEP. If left floating (default), the driver enters independent half-bridge mode (not what we want).
-- IMODE is already pulled LOW (20k on-board): cycle-by-cycle current chopping, automatic retry OCP.
-- VREF is pulled to SLEEP voltage via 10k on-board. With SLEEP driven at 3.3V from Teensy:
-  - VREF ≈ 3.3V
-  - ITRIP = VREF / (RIPROPI x AIPROPI) = 3.3V / (2490 Ohm x 455 uA/A) = **2.91A**
-  - This is well above the 1.4A stall current -- provides generous headroom.
-
-#### Current Sensing (CS Pin)
-
-```
-Pololu: CS ----+---- R6 (10kOhm) ----+---- [trace to Teensy ADC]
-               |                      |
-               |                      C9 (10nF) ---- GND (motor zone)
-               |
-               (2.49k to GND already on Pololu board)
+  DRV8874 OUT1 ───── long trace ───── J3 Pin 6 ───── wire ───── Motor
+                                                                  ⚡ SPARK
+                                                                  │
+                                                        Noise travels back through
+                                                        the motor wire, into J3,
+                                                        along the OUT1 trace, and
+                                                        radiates into:
+                                                          - IMU (corrupts pitch)
+                                                          - CS ADC (noisy current)
+                                                          - Encoder signals
+                                                          - Ground plane
 ```
 
-- The Pololu carrier has a 2.49 kOhm resistor from IPROPI to GND, giving **~1.1 V/A** at the CS pin.
-- At rated current (0.65A): V_CS = **0.72V**.
-- At stall current (1.4A): V_CS = **1.54V** (well within Teensy 3.3V ADC range).
-- R6 + C9 form an optional low-pass filter (fc ~1.6 kHz) to suppress PWM switching noise before the signal crosses the keep-out zone to the Teensy ADC.
-- If you don't need current sensing, leave CS unconnected.
-
-#### Fault Output
-
+**With caps at the connector -- noise stopped at the board edge:**
 ```
-Pololu: FAULT ----+---- R4 (10kOhm) ---- 3.3V (from logic zone)
-                  |
-                  +---- [trace to Teensy digital input]
-```
+  DRV8874 OUT1 ───── trace ─────┬──── J3 Pin 6 ───── wire ───── Motor
+                                │                                 ⚡ SPARK
+                           C7 (100nF)                             │
+                                │                       Noise tries to travel back
+                               GND                      but C7 shunts it to GND
+                                                         HERE, at the connector,
+                                                         before it reaches the PCB
 
-- FAULT is open-drain, active-low. **No pullup on the Pololu board** -- R4 is required.
-- Goes LOW on fault: overcurrent (OCP), undervoltage (UVLO), or thermal shutdown (TSD).
-
-#### Motor Output (to JST-PH connector)
-
-```
-Pololu: OUT1 ----+---- J3/J4 Pin 6 (M1, motor +)
-                 |
-                 C7 (100nF) ---- GND (motor zone)
-
-Pololu: OUT2 ----+---- J3/J4 Pin 1 (M2, motor -)
-                 |
-                 C8 (10nF) ---- GND (motor zone)
+  DRV8874 OUT2 ───── trace ─────┬──── J3 Pin 1 ───── wire ───── Motor
+                                │                                 ⚡ SPARK
+                           C8 (10nF)                              │
+                                │                       C8 catches higher-frequency
+                               GND                      noise that C7 misses
 ```
 
-> **Motor terminal EMI caps:** C7 and C8 suppress brush commutation noise at the source.
-> Place directly at the JST-PH motor connector pins, not near the Pololu carrier.
+**Why two different values:**
 
-#### Pololu: VM Pin (unused)
+Every capacitor has a self-resonant frequency (SRF) above which it stops working as a capacitor. Using two caps extends the effective filtering range:
 
-The VM pin provides access to the motor supply *after* the on-board reverse-voltage protection MOSFET. **Leave VM unconnected** unless you need reverse-protected power for other components.
+| Cap | Value | Code on cap | Effective range | What it catches |
+|-----|-------|-------------|----------------|-----------------|
+| C7 | 100 nF | **104** | ~100 kHz to ~10 MHz | Brush commutation transients |
+| C8 | 10 nF | **103** | ~1 MHz to ~100 MHz | Higher-frequency ringing |
 
-### 4.5 Encoder Pass-Through (per motor zone)
+Together they cover the full noise spectrum of a brushed DC motor.
+
+**Placement rule:** C7 and C8 MUST be placed **at the JST-PH connector pins** (J3/J4), not near the DRV8874. The goal is to intercept noise at the point where motor wires enter the board.
 
 ```
-J3/J4 Pin 2 (V, encoder power) ---- 3.3V (from logic zone)
-J3/J4 Pin 3 (A, encoder phase A) ---- [trace to Teensy digital input]
-J3/J4 Pin 4 (B, encoder phase B) ---- [trace to Teensy digital input]
-J3/J4 Pin 5 (G, encoder ground) ---- GND (motor zone)
+  ┌─── MOTOR ZONE ──────────────────────────────────────────────┐
+  │                                                              │
+  │   [Pololu DRV8874]                     [J3 connector]       │
+  │    OUT1 ─────── long trace ──────────┬── Pin 6 (M1) ── wire │──→ Motor
+  │                                      │                      │
+  │                                 C7 (100nF)  ← PLACE HERE    │
+  │                                      │                      │
+  │    OUT2 ─────── long trace ──────────┬── Pin 1 (M2) ── wire │──→ Motor
+  │                                      │                      │
+  │                                 C8 (10nF)   ← PLACE HERE    │
+  │                                      │                      │
+  │                                     GND (motor zone pour)   │
+  └──────────────────────────────────────────────────────────────┘
 ```
 
-### 4.4 DRV8874 PH/EN Mode Truth Table (Reference)
+> **Capacitor recommendation:** Standard ceramic disc or MLCC capacitors work. A bulk assortment
+> kit with 100nF (code 104) and 10nF (code 103) in through-hole or 0805 SMD is all you need.
+> X7R or X5R dielectric preferred (stable over temperature), but Y5V also works for EMI filtering.
+> Voltage rating: any 16V or higher (we're at 7.4V motor supply).
 
-| nSLEEP | EN (IN1) | PH (IN2) | OUT1 | OUT2 | Motor Action |
-|--------|----------|----------|------|------|-------------|
-| 0 | X | X | Hi-Z | Hi-Z | Sleep (low power) |
-| 1 | 0 | X | LOW | LOW | Brake (slow decay) |
-| 1 | 1 | 1 | HIGH | LOW | Forward |
-| 1 | 1 | 0 | LOW | HIGH | Reverse |
+### 4.7 Motor A vs Motor B Pin Assignments
 
-- Apply PWM to EN for speed control. During PWM LOW phase, both outputs go LOW (brake/slow decay).
-- Set PH HIGH or LOW to select direction.
-- Startup sequence: Set nSLEEP HIGH, wait 1 ms (tWAKE), then begin PWM.
+| Signal | Motor A (Left Zone) | Motor B (Right Zone) |
+|--------|--------------------|--------------------|
+| EN/IN1 (PWM speed) | Teensy **Pin 2** (FlexPWM4) | Teensy **Pin 5** (FlexPWM2) |
+| PH/IN2 (direction) | Teensy **Pin 3** | Teensy **Pin 6** |
+| SLEEP (enable) | Teensy **Pin 29** | Teensy **Pin 30** |
+| FAULT (fault flag) | Teensy **Pin 33** | Teensy **Pin 34** |
+| CS (current sense) | Teensy **Pin 20** (A6) | Teensy **Pin 21** (A7) |
+| OUT1 → M1 | **J3** Pin 6 | **J4** Pin 6 |
+| OUT2 → M2 | **J3** Pin 1 | **J4** Pin 1 |
+| Encoder A | Teensy **Pin 0** | Teensy **Pin 31** |
+| Encoder B | Teensy **Pin 1** | Teensy **Pin 32** |
+| VIN | Battery VM from J2 | Battery VM from J2 |
+| PMODE | GND | GND |
+| VM, VREF, IMODE | NC | NC |
+
+### 4.8 PH/EN Mode Truth Table
+
+We use PH/EN mode (PMODE = LOW). The EN pin receives PWM for speed, PH pin sets direction.
+
+| SLEEP | EN (IN1) | PH (IN2) | OUT1 | OUT2 | Motor Action |
+|-------|----------|----------|------|------|-------------|
+| LOW | X | X | Hi-Z | Hi-Z | **Sleep** (low power, default state) |
+| HIGH | 0 | X | LOW | LOW | **Brake** (slow decay, both outputs shorted to GND) |
+| HIGH | PWM | HIGH | PWM | LOW | **Forward** at PWM duty % |
+| HIGH | PWM | LOW | LOW | PWM | **Reverse** at PWM duty % |
+
+- During the PWM LOW phase, both outputs go LOW (brake/slow decay). This keeps current flowing through the motor windings, giving smooth torque -- essential for balance control.
+- Startup sequence: Set PMODE LOW (already tied to GND), then set SLEEP HIGH, wait 1 ms (tWAKE), then begin PWM.
+
+### 4.9 Torque Control Architecture
+
+For a brushed DC motor: **T = Kt x I** (torque = torque constant x current). Controlling current directly gives linear, predictable torque regardless of battery voltage or motor speed.
+
+```
+                   500-1000 Hz                      10-20 kHz
+EKF2 pitch ──→ [Balance PID] ──→ I_desired ──→ [Current PI] ──→ PWM duty
+                                                    ↑
+                                                    │
+                                              I_actual (CS pin ADC)
+                                              read every PWM cycle
+```
+
+**Why this matters for a balancing robot:**
+- The balance PID commands torque (Amps), not voltage. Same corrective force at 8.4V (full) or 6.0V (depleted).
+- The inner current loop rejects back-EMF disturbances faster than the balance loop.
+- Inherent current limiting -- motor can never exceed the commanded current.
 
 ---
 
@@ -626,10 +843,10 @@ At 20 kHz PWM edges (with fast rise times), this long loop radiates EMI and intr
 - Trace width: 0.25 mm (10 mil). Route SCK with minimal stubs.
 - **Do not route any traces under the IMU footprint on the ground plane layer.** Keep solid, unbroken copper under the IMU.
 
-#### Analog Sensing (A0, A1)
-- Route V_SENSE and I_SENSE traces **away from PWM lines** and the SPI bus.
-- Use a **ground guard ring** or ground traces flanking the analog signal traces.
-- Add 100 nF filtering capacitors at the Teensy ADC input pins, placed within 5 mm of the pin.
+#### PM02D I2C Routing (Pins 18/19)
+- Route SCL and SDA as a pair, **away from PWM lines** and the SPI bus.
+- Keep traces within the logic zone (no keep-out crossing needed).
+- No external pull-ups needed (PM02D has on-board pull-ups).
 - Trace width: 0.25 mm (10 mil).
 
 #### IPROPI Analog Return Traces
@@ -646,7 +863,7 @@ At 20 kHz PWM edges (with fast rise times), this long loop radiates EMI and intr
 #### Component Placement Priority
 1. **IMU first** -- place at the target location (above wheel axle center) before anything else.
 2. **Teensy second** -- place adjacent to IMU, minimizing SPI trace length.
-3. **PM02 sense resistors** -- place near Teensy ADC pins.
+3. **J1 (PM02D Molex connector)** -- place near Teensy I2C pins (18/19).
 4. **J1 connector** -- bottom edge of logic zone.
 
 ### 5.3 Motor Zone Layout (Left & Right, mirrored)
@@ -689,10 +906,11 @@ With the single-board design, the only external cables are:
 
 | Cable | From | To | Wire Gauge | Max Length |
 |-------|------|-----|-----------|-----------|
-| PM02 power | PM02 module | J1 (JST-PH 4-pin) | 22-24 AWG | < 200 mm |
-| Battery VM | PM02 XT60 output | J2 (JST-PH 2-pin) | 18-20 AWG | < 150 mm |
+| PM02D power + I2C | PM02D module | J1 (JST-PH 6-pin) | Re-crimped cable | < 200 mm |
+| Battery VM | PM02D XT60 output | J2 (XT30) | 18-20 AWG | < 150 mm |
 | Motor A + Encoder A | Hiwonder motor | J3 (JST-PH 6-pin) | Stock cable | As short as possible |
 | Motor B + Encoder B | Hiwonder motor | J4 (JST-PH 6-pin) | Stock cable | As short as possible |
+| UART2 companion | RPi / BBB | J5 (JST-PH 4-pin) | 24-26 AWG | < 300 mm |
 
 - **Strain-relieve all cables.** A balancing robot oscillates continuously during operation.
 - Route motor cables **symmetrically** left-to-right to avoid asymmetric mass.
@@ -710,20 +928,52 @@ With the single-board design, the only external cables are:
 
 ### 5.6 Self-Balancing Control Loop Timing Considerations
 
-The PCB design directly affects achievable control loop rates:
+The system uses two nested control loops with different rates:
 
-| Parameter | Value | Impact |
-|-----------|-------|--------|
-| SPI IMU read (14 bytes @ 7 MHz) | ~16 us | Fast; not the bottleneck |
-| Teensy 4.1 PID computation | ~5-10 us | Negligible at 600 MHz |
-| PWM update | < 1 us | Negligible |
-| Encoder read (hardware counter) | < 1 us | Negligible |
-| ADC read (2x IPROPI) | ~10 us | Optional per loop |
-| **Total loop time** | **~30 us** | **Supports up to 30+ kHz loop rate** |
+#### Inner Loop -- Current/Torque Control (10-20 kHz)
 
-- The SPI upgrade from I2C reduces IMU read time from ~350 us (14 bytes @ 400 kHz I2C with overhead) to ~16 us, critical for high-rate balance control.
-- Target control loop rate: **500-1000 Hz** for a responsive balancer. The hardware easily supports this.
-- Use the IMU's data-ready interrupt (Pin 17) to trigger reads at the sensor's output data rate (up to 1.125 kHz for accel/gyro on ICM-20948) rather than polling.
+Runs inside the DRV8874 motor driver, synchronized to PWM frequency.
+
+| Step | Time | Notes |
+|------|------|-------|
+| ADC read (CS pin) | ~2 us | Single channel, 12-bit |
+| PI computation | ~1 us | Simple proportional + integral |
+| PWM duty update | < 1 us | Register write |
+| **Total per motor** | **~4 us** | Two motors = ~8 us per PWM cycle |
+
+At 20 kHz PWM: 50 us per cycle, uses ~8 us = **16% CPU**. Comfortable margin.
+
+#### Outer Loop -- Balance Control (500-1000 Hz)
+
+Triggered by IMU data-ready interrupt.
+
+| Step | Time | Notes |
+|------|------|-------|
+| SPI IMU read (14 bytes @ 7 MHz) | ~16 us | Accel + gyro registers |
+| EKF2 attitude estimation | ~5-10 us | Quaternion update (PX4) |
+| Balance PID computation | ~5 us | Pitch error -> torque command |
+| Encoder read (hardware counter) | < 1 us | Optional, for position hold |
+| Publish uORB topics | ~2 us | actuator_motors + balance_status |
+| **Total** | **~30 us** | **Supports up to 30+ kHz loop rate** |
+
+At 1 kHz: 1000 us per cycle, uses ~30 us = **3% CPU**. The vast majority of CPU time is available for the inner current loop, logging, and MAVLink telemetry.
+
+#### PM02D Power Monitoring (10-50 Hz, separate bus)
+
+| Step | Time | Bus |
+|------|------|-----|
+| INA226 voltage read | ~35 us | I2C @ 400 kHz (Pins 18/19) |
+| INA226 current read | ~35 us | I2C @ 400 kHz |
+| **Total** | **~70 us** | **Completely independent of SPI/ADC** |
+
+The I2C power monitor runs on a low-priority work queue and a separate bus. It cannot interfere with either control loop.
+
+#### Key Timing Notes
+
+- The SPI upgrade from I2C reduces IMU read time from ~350 us to ~16 us, critical for high-rate balance control.
+- Use the IMU's data-ready interrupt (Pin 17) to trigger outer loop reads at the sensor's output data rate (up to 1.125 kHz for accel/gyro on ICM-20948).
+- The inner current loop runs from a FlexPWM timer interrupt, synchronized to the PWM cycle. ADC sampling is triggered at the PWM midpoint (center of the ON period) for cleanest current measurement.
+- The CS pin R6/C9 filter (fc = 15.9 kHz) is designed to pass the inner loop bandwidth while filtering PWM switching transients.
 
 ---
 
@@ -739,9 +989,8 @@ The PCB design directly affects achievable control loop rates:
 #define IMU_INT     17    // ICM-20948 data-ready interrupt
 // SPI0 hardware pins: SCK=13, MOSI=11, MISO=12
 
-// PM02 Power Sensing
-#define V_SENSE_PIN A0    // Battery voltage sense (pin 14)
-#define I_SENSE_PIN A1    // Battery current sense (pin 15)
+// PM02D Power Sensing (I2C, no pin defines needed -- handled by INA226 driver)
+// PM02D INA226 on I2C0 (Wire): SCL = Pin 19, SDA = Pin 18, address 0x40
 
 // Motor A (left motor zone, Pololu DRV8874 carrier A)
 #define PWM_A       2     // Pololu A: EN/IN1 - speed (FlexPWM4_PWMA02)
@@ -845,13 +1094,21 @@ void imuWriteRegister(uint8_t reg, uint8_t val) {
 ## 7. Schematic Checklist
 
 ### Electrical -- Logic Zone
-- [ ] Teensy 4.1 VIN connected to PM02 5V (J1 Pin 1) with decoupling (100nF + 10uF)
+- [ ] Teensy 4.1 VIN connected to PM02D VCC (J1 Pins 1+2) with decoupling (100nF + 10uF)
 - [ ] ICM-20948 VIN connected to Teensy 3.3V
 - [ ] SPI0 bus connected: SCK=Pin13->SCL, MOSI=Pin11->SDA, MISO=Pin12->SDO, CS=Pin10->CS
 - [ ] ICM-20948 CS pin actively driven (not floating) to select SPI mode
 - [ ] IMU INT connected to Teensy Pin 17
-- [ ] PM02 V_SENSE routed to Teensy A0 (Pin 14) with R1/R2 divider and filtering
-- [ ] PM02 I_SENSE routed to Teensy A1 (Pin 15) with filtering
+- [ ] J1 is JST-PH 6-pin (S6B-PH-K-S) -- PM02D cable re-crimped to JST-PH
+- [ ] J1 Pins 1+2 (VCC) both connected to Teensy VIN with C1 (100nF) + C2 (10uF)
+- [ ] J1 Pin 3 (SCL) connected to Teensy Pin 19 (SCL0)
+- [ ] J1 Pin 4 (SDA) connected to Teensy Pin 18 (SDA0)
+- [ ] J1 Pins 5+6 (GND) both connected to logic zone ground pour
+- [ ] I2C traces routed as pair within logic zone, away from PWM traces
+- [ ] No external I2C pull-ups (PM02D has on-board pull-ups)
+- [ ] J5 (UART2, JST-PH 4-pin): TX=Pin 8, RX=Pin 7, GND, 3V3
+- [ ] J5 placed on top board edge for companion board cable access
+- [ ] UART traces routed within logic zone, away from SPI and PWM
 - [ ] All GND pins connected to logic zone ground pour
 
 ### Electrical -- Motor Zone A (Left, Pololu Carrier A)
@@ -865,7 +1122,7 @@ void imuWriteRegister(uint8_t reg, uint8_t val) {
 - [ ] Pololu EN/IN1 <- Teensy Pin 2 (PWM_A)
 - [ ] Pololu PH/IN2 <- Teensy Pin 3 (DIR_A)
 - [ ] Pololu SLEEP <- Teensy Pin 29 (active HIGH enable)
-- [ ] Pololu CS: R6a/C9a filter to Teensy A6 (Pin 20)
+- [ ] Pololu CS: R6a (1k) + C9a (10nF) filter (fc=15.9kHz) to Teensy A6 (Pin 20)
 - [ ] Pololu FAULT: R4a (10k) pullup to 3.3V, routed to Teensy Pin 33
 - [ ] Pololu OUT1 -> J3 Pin 6 (M1) with C7a (100nF) to GND
 - [ ] Pololu OUT2 -> J3 Pin 1 (M2) with C8a (10nF) to GND
@@ -888,7 +1145,8 @@ void imuWriteRegister(uint8_t reg, uint8_t val) {
 - [ ] IPROPI traces ground-guarded through keep-out areas
 - [ ] GND bridge trace (1.0 mm) at each keep-out crossing point
 - [ ] No traces routed under IMU footprint on ground plane layer
-- [ ] VM copper pour from J2 to both motor zones (1.5 mm min or pour)
+- [ ] VM copper pour from J2 (XT30) to both motor zones (1.5 mm min or pour)
+- [ ] J2 is XT30 male PCB-mount (NOT JST-PH -- exceeds 2A rating at motor stall)
 
 ### Layout -- Self-Balancing
 - [ ] IMU placed at board center, aligned above wheel axle when mounted

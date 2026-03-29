@@ -3,7 +3,7 @@
 	(generator "pcbnew")
 	(generator_version "9.0")
 	(layer "F.Cu")
-	(property "Reference" "REF**"
+	(property "Reference" "ICM20948"
 		(at -9.775 -10.775 0)
 		(layer "F.SilkS")
 		(uuid "2d6ad57d-d98d-4a6c-b884-d5ce4b56649b")
@@ -71,6 +71,56 @@
 		(uuid "391a11fe-dc81-44f5-b10a-93996c464714")
 	)
 	(fp_line
+		(start -3 2)
+		(end -2.4 1.4)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "286c50e4-714b-4117-b701-607e96c79cb3")
+	)
+	(fp_line
+		(start -3 2)
+		(end -2.4 2.6)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "8d184748-e29d-4f39-aa5d-14d27b337d68")
+	)
+	(fp_line
+		(start -3 2)
+		(end 0 2)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "2a3de897-4a15-482b-9030-ccfa5bef8890")
+	)
+	(fp_line
+		(start 0.65 1.65)
+		(end 1.35 2.35)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "30335c5c-c13f-4559-b276-43846bf5e5ed")
+	)
+	(fp_line
+		(start 0.65 2.35)
+		(end 1.35 1.65)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "96b9be89-bd50-42ed-b0cb-db628d58f6eb")
+	)
+	(fp_line
 		(start 10.16 8.89)
 		(end -10.16 8.89)
 		(stroke
@@ -89,6 +139,17 @@
 		)
 		(layer "F.SilkS")
 		(uuid "039bc5f3-cdc7-4032-8746-511e377672a5")
+	)
+	(fp_rect
+		(start -1 -1)
+		(end 1 1)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "35e291f9-2cd9-4121-8039-899706a92087")
 	)
 	(fp_arc
 		(start -12.7 -6.35)
