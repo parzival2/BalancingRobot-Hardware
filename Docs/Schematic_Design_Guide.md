@@ -33,13 +33,13 @@ All electronics reside on a **single PCB** divided into three logical zones sepa
 
 **External connectors:**
 
-| Connector | Type | Function | Current | Location |
-|-----------|------|----------|---------|----------|
-| J1 | JST-PH 6-pin (S6B-PH-K-S) | PM02D power (5.2V) + I2C sense | ~0.3A | Bottom center |
-| J2 | **XT30 male (PCB mount)** | Battery VM input (7.4V raw) | **2.8A peak** | Bottom center |
-| J3 | JST-PH 6-pin (S6B-PH-K-S) | Motor A + Encoder A (Hiwonder) | 1.4A motor + signal | Left edge |
-| J4 | JST-PH 6-pin (S6B-PH-K-S) | Motor B + Encoder B (Hiwonder) | 1.4A motor + signal | Right edge |
-| J5 | JST-PH 4-pin (S4B-PH-K-S) | UART2 (companion board: RPi/BBB) | Signal only | Top edge |
+| Schematic Ref | Type | Function | Current | Location |
+|---------------|------|----------|---------|----------|
+| **J1** | JST-PH 6-pin (S6B-PH-K-S) | PM02D power (5.2V) + I2C sense | ~0.3A | Bottom center |
+| **J3** | XT30 male PCB-mount | Battery VM input (7.4V raw) | **2.8A peak** | Bottom center |
+| **J4** | JST-PH 6-pin (S6B-PH-K-S) | Motor A + Encoder A (Hiwonder) | 1.4A motor + signal | Left edge |
+| **J5** | JST-PH 6-pin (S6B-PH-K-S) | Motor B + Encoder B (Hiwonder) | 1.4A motor + signal | Right edge |
+| **J2** | JST-PH 4-pin (S4B-PH-K-S) | UART2 (companion board: RPi/BBB) | Signal only | Top edge |
 
 > **Why XT30 for J2?** The battery VM input carries up to 2.8A peak (both motors at stall).
 > JST-PH is only rated for 2A per contact -- insufficient for motor power. XT30 is rated
@@ -69,30 +69,33 @@ All electronics reside on a **single PCB** divided into three logical zones sepa
 | U1 | Teensy 4.1 | ARM Cortex-M7 @ 600 MHz, with pin headers | 1 |
 | U2 | Adafruit ICM-20948 | 9-DoF IMU breakout (Accel/Gyro/Mag) | 1 |
 | J1 | JST-PH 6-pin (S6B-PH-K-S) | PM02D power + I2C (re-crimp PM02D cable) | 1 |
-| C1 | 100 nF ceramic X7R | Decoupling on Teensy VIN | 1 |
-| C2 | 10 uF ceramic X5R | Bulk cap on Teensy VIN | 1 |
-| J5 | JST-PH 4-pin (S4B-PH-K-S) | UART2 header for companion board (RPi/BBB) | 1 |
+| J2 | JST-PH 4-pin (S4B-PH-K-S) | UART2 header for companion board (RPi/BBB) | 1 |
+| C1 | 100 nF ceramic | Decoupling on Teensy VIN | 1 |
+| -- | **10 uF electrolytic (MISSING from schematic)** | **Bulk cap on Teensy VIN -- ADD THIS** | 1 |
 
 **Motor Zone A (Left) -- Identical to Motor Zone B**
 
 The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM bypass cap, charge pump caps (storage + flying), reverse-voltage protection MOSFET, IMODE 20k pulldown, VREF 10k pullup to SLEEP, and RIPROPI 2.49k to GND (CS output at ~1.1 V/A). The only external components needed per zone are:
 
-| Ref (Zone A / Zone B) | Component | Description | Qty each |
-|------------------------|-----------|-------------|----------|
-| U3a / U3b | Pololu DRV8874 carrier (#4035) | Motor driver breakout, 0.1" headers | 1 |
-| J3 / J4 | JST-PH 6-pin (S6B-PH-K-S) | Motor + encoder connector | 1 |
-| C4a / C4b | 100 uF 16V electrolytic | VM bulk cap (recommended for wire runs to J2) | 1 |
-| C7a / C7b | 100 nF ceramic | Motor terminal EMI cap (OUT1/M1) | 1 |
-| C8a / C8b | 10 nF ceramic | Motor terminal EMI cap (OUT2/M2) | 1 |
-| R4a / R4b | 10 kOhm 1/4W | FAULT pullup to 3.3V (not on Pololu board) | 1 |
-| R6a / R6b | 1 kOhm 1/4W | CS low-pass filter resistor (for torque control) | 1 |
-| C9a / C9b | 10 nF ceramic | CS low-pass filter cap (fc = 15.9 kHz with 1k R6) | 1 |
+| Schematic Ref (Zone A / Zone B) | Component | Description | Qty each |
+|----------------------------------|-----------|-------------|----------|
+| U3 / U4 | Pololu DRV8874 carrier (#4035) | Motor driver breakout, 0.1" headers | 1 |
+| J4 / J5 | JST-PH 6-pin (S6B-PH-K-S) | Motor + encoder connector | 1 |
+| -- / -- | **100 uF 16V electrolytic (MISSING)** | **VM bulk cap near Pololu VIN -- ADD THIS** | 1 |
+| C3 / C5 | 100 nF ceramic | Motor terminal EMI cap (OUT1/M1) | 1 |
+| C4 / C6 | 10 nF ceramic | Motor terminal EMI cap (OUT2/M2) | 1 |
+| R1 / R3 | 10 kOhm | FAULT pullup to 3.3V (not on Pololu board) | 1 |
+| R2 / R4 | 1 kOhm | CS low-pass filter resistor (for torque control) | 1 |
+| C2 / -- | 10 nF ceramic | CS low-pass filter cap (fc = 15.9 kHz with 1k) | 1 |
+
+> **NOTE: Schematic currently shows C2 as 10nF. This should be the CS filter cap for Motor A.
+> A second CS filter cap for Motor B is needed but not yet placed in the schematic.**
 
 **Shared / Board-Level**
 
 | Ref | Component | Description | Qty |
 |-----|-----------|-------------|-----|
-| J2 | XT30 male PCB-mount | Battery VM input (7.4V, 2.8A peak, splits to both zones) | 1 |
+| J3 | XT30 male PCB-mount | Battery VM input (7.4V, 2.8A peak, splits to both zones) | 1 |
 | FB1, FB2 | Ferrite bead 600 Ohm @ 100 MHz | 3.3V isolation into each motor zone (optional) | 2 |
 | -- | 0.1" pin headers (13-pin) | For mounting each Pololu carrier to main PCB | 2 sets |
 | -- | M3 mounting holes (3.2 mm) | Board corners, symmetric | 4 |
@@ -1091,79 +1094,155 @@ void imuWriteRegister(uint8_t reg, uint8_t val) {
 
 ---
 
-## 7. Schematic Checklist
+## 7. Schematic Review Status
 
-### Electrical -- Logic Zone
-- [ ] Teensy 4.1 VIN connected to PM02D VCC (J1 Pins 1+2) with decoupling (100nF + 10uF)
-- [ ] ICM-20948 VIN connected to Teensy 3.3V
-- [ ] SPI0 bus connected: SCK=Pin13->SCL, MOSI=Pin11->SDA, MISO=Pin12->SDO, CS=Pin10->CS
-- [ ] ICM-20948 CS pin actively driven (not floating) to select SPI mode
-- [ ] IMU INT connected to Teensy Pin 17
-- [ ] J1 is JST-PH 6-pin (S6B-PH-K-S) -- PM02D cable re-crimped to JST-PH
-- [ ] J1 Pins 1+2 (VCC) both connected to Teensy VIN with C1 (100nF) + C2 (10uF)
-- [ ] J1 Pin 3 (SCL) connected to Teensy Pin 19 (SCL0)
-- [ ] J1 Pin 4 (SDA) connected to Teensy Pin 18 (SDA0)
-- [ ] J1 Pins 5+6 (GND) both connected to logic zone ground pour
-- [ ] I2C traces routed as pair within logic zone, away from PWM traces
-- [ ] No external I2C pull-ups (PM02D has on-board pull-ups)
-- [ ] J5 (UART2, JST-PH 4-pin): TX=Pin 8, RX=Pin 7, GND, 3V3
-- [ ] J5 placed on top board edge for companion board cable access
-- [ ] UART traces routed within logic zone, away from SPI and PWM
-- [ ] All GND pins connected to logic zone ground pour
+### Verified Correct (all 23 Teensy pin assignments match design guide)
 
-### Electrical -- Motor Zone A (Left, Pololu Carrier A)
-- [ ] Pololu carrier A footprint correct: 13 through-hole pins, 0.1" pitch, 0.6" row spacing
-- [ ] Pololu VIN connected to battery pour from J2
-- [ ] Pololu GND connected to motor zone A ground pour
-- [ ] C4a (100uF bulk) placed within 10mm of Pololu VIN pin
-- [ ] Pololu PMODE tied to GND (PH/EN mode -- CRITICAL, do not leave floating)
-- [ ] Pololu IMODE left unconnected (20k pulldown on carrier)
-- [ ] Pololu VREF left unconnected (10k pullup to SLEEP on carrier)
-- [ ] Pololu EN/IN1 <- Teensy Pin 2 (PWM_A)
-- [ ] Pololu PH/IN2 <- Teensy Pin 3 (DIR_A)
-- [ ] Pololu SLEEP <- Teensy Pin 29 (active HIGH enable)
-- [ ] Pololu CS: R6a (1k) + C9a (10nF) filter (fc=15.9kHz) to Teensy A6 (Pin 20)
-- [ ] Pololu FAULT: R4a (10k) pullup to 3.3V, routed to Teensy Pin 33
-- [ ] Pololu OUT1 -> J3 Pin 6 (M1) with C7a (100nF) to GND
-- [ ] Pololu OUT2 -> J3 Pin 1 (M2) with C8a (10nF) to GND
-- [ ] Pololu VM left unconnected (not needed; power enters via VIN)
-- [ ] Encoder: J3 Pin 2 (V) <- 3.3V; J3 Pin 3 (A) -> Teensy Pin 0; J3 Pin 4 (B) -> Teensy Pin 1
+| Signal | Teensy Pin | Schematic Label | Status |
+|--------|-----------|-----------------|--------|
+| Encoder A phase A | Pin 0 | ENC_A_PH_A | OK |
+| Encoder A phase B | Pin 1 | ENC_A_PH_B | OK |
+| Motor A PWM | Pin 2 | MOTA_PWM | OK |
+| Motor A direction | Pin 3 | MOTA_DIR | OK |
+| Motor B PWM | Pin 5 | MOTB_PWM | OK |
+| Motor B direction | Pin 6 | MOTB_DIR | OK |
+| UART2 RX (companion) | Pin 7 | UART_COMP_RX | OK |
+| UART2 TX (companion) | Pin 8 | UART_COMP_TX | OK |
+| IMU SPI CS | Pin 10 | ICM20948_CS | OK |
+| IMU SPI MOSI | Pin 11 | ICM20948_SDI | OK |
+| IMU SPI MISO | Pin 12 | ICM20948_SDO | OK |
+| IMU SPI SCK | Pin 13 | ICM20948_SCL | OK |
+| IMU Interrupt | Pin 17 | ICM20948_INT | OK |
+| PM02D I2C SDA | Pin 18 | PM02_SDA | OK |
+| PM02D I2C SCL | Pin 19 | PM02_SCL | OK |
+| Motor A current sense | Pin 20 (A6) | MOTA_CUR | OK |
+| Motor B current sense | Pin 21 (A7) | MOTB_CUR | OK |
+| Motor A SLEEP | Pin 29 | MOTA_SLEEP | OK |
+| Motor B SLEEP | Pin 30 | MOTB_SLEEP | OK |
+| Encoder B phase A | Pin 31 | ENC_B_PH_A | OK |
+| Encoder B phase B | Pin 32 | ENC_B_PH_B | OK |
+| Motor A FAULT | Pin 33 | MOTA_FAULT | OK |
+| Motor B FAULT | Pin 34 | MOTB_FAULT | OK |
 
-### Electrical -- Motor Zone B (Right, Pololu Carrier B)
-- [ ] (Mirror of Motor Zone A with these pin substitutions:)
-- [ ] Pololu EN/IN1 <- Teensy Pin 5 (PWM_B); PH/IN2 <- Teensy Pin 6 (DIR_B)
-- [ ] Pololu SLEEP <- Teensy Pin 30; CS filter -> Teensy A7 (Pin 21); FAULT -> Teensy Pin 34
-- [ ] Motor outputs -> J4 (Pin 6 = M1, Pin 1 = M2) with EMI caps
-- [ ] Encoder: J4 Pin 3 (A) -> Teensy Pin 31; J4 Pin 4 (B) -> Teensy Pin 32
-- [ ] All other Pololu carrier wiring identical to Zone A
+### Schematic Component Summary (as-built)
 
-### Layout -- Zoned Ground Plane
+| Ref | Component | Value | Footprint | Status |
+|-----|-----------|-------|-----------|--------|
+| U1 | Teensy 4.1 | -- | Teensy41:Teensy41 | OK |
+| U2 | ICM-20948 Carrier | -- | Adafruit_ICM20948:ICM20948_Carrier | OK |
+| U3 | DRV8874 Carrier (Motor A) | -- | Pololu_DRV8874:DRV8874_Carrier | OK |
+| U4 | DRV8874 Carrier (Motor B) | -- | Pololu_DRV8874:DRV8874_Carrier | OK |
+| J1 | PM02D connector | 6-pin | JST_PH_S6B-PH-K | OK |
+| J2 | UART companion | 4-pin | JST_PH_S4B-PH-K | OK |
+| J3 | Battery XT30 | 2-pin | AMASS_XT30U-F | OK |
+| J4 | Motor A + Encoder A | 6-pin | JST_PH_S6B-PH-K | OK |
+| J5 | Motor B + Encoder B | 6-pin | JST_PH_S6B-PH-K | OK |
+| C1 | VIN bypass cap | 100nF | C_Disc_D5.0mm | OK |
+| C2 | CS filter cap (Motor A) | 10nF | C_Disc_D5.0mm | OK |
+| C3 | Motor A EMI cap (OUT1) | 100nF | C_Disc_D5.0mm | OK |
+| C4 | Motor A EMI cap (OUT2) | 10nF | C_Disc_D5.0mm | OK |
+| C5 | Motor B EMI cap (OUT1) | 100nF | C_Disc_D5.0mm | OK |
+| C6 | Motor B EMI cap (OUT2) | 10nF | C_Disc_D5.0mm | OK |
+| R1 | FAULT pullup Motor A | 10k | R_Axial_DIN0204 | OK |
+| R2 | CS filter Motor A | 1k | R_Axial_DIN0204 | OK |
+| R3 | FAULT pullup Motor B | 10k | R_Axial_DIN0204 | OK |
+| R4 | CS filter Motor B | 1k | R_Axial_DIN0204 | OK |
+
+### Issues to Fix
+
+**1. MISSING: 10uF bulk cap on Teensy VIN**
+The design guide calls for C1 (100nF) + a 10uF bulk cap on Teensy VIN. Only C1 (100nF) is placed. Add a 10uF electrolytic or ceramic cap between +5V and GND near the Teensy.
+- Footprint: `Capacitor_THT:CP_Radial_D5.0mm_P2.50mm` (electrolytic) or `C_Disc_D5.0mm` (ceramic if available in 10uF)
+
+**2. MISSING: 100uF bulk caps near DRV8874 VIN (x2)**
+Each Pololu carrier needs a 100uF 16V electrolytic near its VIN pin to handle motor current transients. Neither is in the schematic.
+- Footprint: `Capacitor_THT:CP_Radial_D5.0mm_P2.50mm`
+- One per motor zone, placed within 10mm of each Pololu VIN pin.
+
+**3. MISSING: CS filter cap for Motor B**
+C2 (10nF) is the CS filter cap for Motor A (pairs with R2 1k). Motor B has R4 (1k CS filter resistor) but no matching 10nF filter cap. Add one.
+
+**4. Battery power symbol is +12V -- should be VBAT or +7V4**
+The schematic uses `power:+12V` for the battery VM rail, but the actual voltage is 7.4V (2S LiPo, range 6.0-8.4V). This is misleading. Consider:
+- Replace with a net label `VBAT` or `VM`
+- Or create a custom power symbol `+7V4`
+- Not a functional error, but confusing during review.
+
+**5. 49 no-connect flags on unused Teensy pins -- OK**
+Correct count for the ~49 unused Teensy pins. No issue.
+
+**6. 3 PWR_FLAG symbols -- verify placement**
+PWR_FLAGs are needed on power nets that are driven by connectors (not by IC power outputs). Verify they are on: +5V (from J1 PM02D), GND, and +12V/VBAT (from J3 XT30).
+
+### Schematic Checklist (updated with actual ref designators)
+
+#### Logic Zone
+- [x] U1 (Teensy 4.1) VIN connected to PM02D VCC via J1 with C1 (100nF)
+- [ ] **ADD: 10uF bulk cap on Teensy VIN (C1 alone is insufficient)**
+- [x] U2 (ICM-20948) VIN connected to +3V3
+- [x] SPI0: ICM20948_SCL(Pin13), ICM20948_SDI(Pin11), ICM20948_SDO(Pin12), ICM20948_CS(Pin10)
+- [x] ICM20948_INT connected to Teensy Pin 17
+- [x] J1 (PM02D): Pin 3 SCL -> PM02_SCL -> Teensy Pin 19; Pin 4 SDA -> PM02_SDA -> Teensy Pin 18
+- [x] J2 (UART): Pin 1 TX=Pin 8, Pin 2 RX=Pin 7, Pin 3 GND, Pin 4 3V3
+- [x] 49 no-connect flags on unused Teensy pins
+
+#### Motor Zone A (U3)
+- [x] U3 EN/IN1 <- MOTA_PWM <- Teensy Pin 2
+- [x] U3 PH/IN2 <- MOTA_DIR <- Teensy Pin 3
+- [x] U3 SLEEP <- MOTA_SLEEP <- Teensy Pin 29
+- [x] U3 FAULT -> R1 (10k to 3.3V) -> MOTA_FAULT -> Teensy Pin 33
+- [x] U3 CS -> R2 (1k) + C2 (10nF) -> MOTA_CUR -> Teensy Pin 20 (A6)
+- [x] U3 OUT1 -> C3 (100nF to GND) -> J4 Pin 6 (M1)
+- [x] U3 OUT2 -> C4 (10nF to GND) -> J4 Pin 1 (M2)
+- [x] U3 PMODE tied to GND
+- [x] U3 VM, VREF, IMODE left NC
+- [x] J4 Pin 2 (encoder V) <- 3.3V; Pin 3 (A) -> ENC_A_PH_A -> Pin 0; Pin 4 (B) -> ENC_A_PH_B -> Pin 1
+- [ ] **ADD: 100uF bulk cap near U3 VIN**
+
+#### Motor Zone B (U4)
+- [x] U4 EN/IN1 <- MOTB_PWM <- Teensy Pin 5
+- [x] U4 PH/IN2 <- MOTB_DIR <- Teensy Pin 6
+- [x] U4 SLEEP <- MOTB_SLEEP <- Teensy Pin 30
+- [x] U4 FAULT -> R3 (10k to 3.3V) -> MOTB_FAULT -> Teensy Pin 34
+- [x] U4 CS -> R4 (1k) -> MOTB_CUR -> Teensy Pin 21 (A7)
+- [ ] **ADD: 10nF CS filter cap for Motor B (R4 has no matching cap)**
+- [x] U4 OUT1 -> C5 (100nF to GND) -> J5 Pin 6 (M1)
+- [x] U4 OUT2 -> C6 (10nF to GND) -> J5 Pin 1 (M2)
+- [x] U4 PMODE tied to GND
+- [x] U4 VM, VREF, IMODE left NC
+- [x] J5 Pin 2 (encoder V) <- 3.3V; Pin 3 (A) -> ENC_B_PH_A -> Pin 31; Pin 4 (B) -> ENC_B_PH_B -> Pin 32
+- [ ] **ADD: 100uF bulk cap near U4 VIN**
+
+#### Power Rails
+- [ ] **FIX: +12V power symbol should be VBAT or +7V4 (battery is 7.4V, not 12V)**
+- [x] +5V rail from J1 PM02D to Teensy VIN
+- [x] +3V3 rail from Teensy to IMU, encoders, FAULT pullups
+- [x] GND symbols placed throughout
+- [x] PWR_FLAG symbols present (3x)
+
+### Layout Checklist (for PCB phase)
+
+#### Zoned Ground Plane
 - [ ] Three separate ground pours: Logic (center), Motor A (left), Motor B (right)
 - [ ] Keep-out areas (2-3 mm gap) between logic pour and each motor pour
-- [ ] Single star-ground point connecting all three pours, near J1/J2
-- [ ] Zone-crossing traces grouped tightly through keep-out gaps
-- [ ] IPROPI traces ground-guarded through keep-out areas
-- [ ] GND bridge trace (1.0 mm) at each keep-out crossing point
+- [ ] GND bridge trace (1.0 mm) at each keep-out crossing, adjacent to signal group
 - [ ] No traces routed under IMU footprint on ground plane layer
-- [ ] VM copper pour from J2 (XT30) to both motor zones (1.5 mm min or pour)
-- [ ] J2 is XT30 male PCB-mount (NOT JST-PH -- exceeds 2A rating at motor stall)
+- [ ] VM copper pour from J3 (XT30) to both motor zones (1.5 mm min or pour)
 
-### Layout -- Self-Balancing
+#### Self-Balancing
 - [ ] IMU placed at board center, aligned above wheel axle when mounted
 - [ ] IMU X-axis aligned with robot forward/backward (pitch) direction
 - [ ] Solid unbroken logic ground pour under IMU footprint
-- [ ] IMU offset from wheel axle center < 30 mm
 - [ ] Board is left-right symmetric (Motor A zone mirrors Motor B zone)
-- [ ] J3 on left edge, J4 on right edge (symmetric motor cable routing)
+- [ ] J4 on left edge, J5 on right edge (symmetric motor cable routing)
 - [ ] 4x M3 mounting holes, symmetric, with space for rubber grommets
-- [ ] Board dimensions as compact as possible (minimize moment of inertia)
 
-### Mechanical / Chassis Integration
+#### Mechanical / Chassis Integration
 - [ ] Rubber grommets or soft-mount standoffs between PCB and chassis
 - [ ] Battery mounted above wheel axle (high CoG for slower pendulum dynamics)
 - [ ] All cables strain-relieved to chassis (not to PCB)
 - [ ] Motor cables routed symmetrically left-to-right
-- [ ] Hiwonder PH2.0 motor cables plug directly into J3/J4
+- [ ] Hiwonder PH2.0 motor cables plug directly into J4/J5
 
 ---
 
