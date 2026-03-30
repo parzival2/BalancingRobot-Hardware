@@ -5397,7 +5397,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x06_Socket"
+		(property "Value" "MOT-B"
 			(at 238.76 72.39 0)
 			(effects
 				(font
@@ -5479,7 +5479,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x06_Socket"
+		(property "Value" "MOT-A"
 			(at 109.855 50.8 0)
 			(effects
 				(font

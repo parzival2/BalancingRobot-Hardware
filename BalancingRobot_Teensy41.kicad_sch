@@ -4851,7 +4851,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x02_Socket"
+		(property "Value" "XT30"
 			(at 147.32 22.225 0)
 			(effects
 				(font
@@ -4928,7 +4928,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x06_Socket"
+		(property "Value" "PM02D"
 			(at 23.495 24.765 0)
 			(effects
 				(font
@@ -5340,7 +5340,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x04_Socket"
+		(property "Value" "UART"
 			(at 86.995 27.94 0)
 			(effects
 				(font
