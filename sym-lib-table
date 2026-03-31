@@ -1,6 +1,6 @@
 (sym_lib_table
   (version 7)
-  (lib (name "Teensy")(type "KiCad")(uri "/home/krallapalli/Projects/KiCad/teensy_library/teensy.kicad_sym")(options "")(descr ""))
   (lib (name "ICM20948_Carrier")(type "KiCad")(uri "${KIPRJMOD}/ICM20948_Carrier.kicad_sym")(options "")(descr ""))
   (lib (name "DRV8874_Carrier")(type "KiCad")(uri "${KIPRJMOD}/DRV8874_Carrier.kicad_sym")(options "")(descr ""))
+  (lib (name "Teensy4.1")(type "KiCad")(uri "${KIPRJMOD}/teensy4.1.kicad_sym")(options "")(descr ""))
 )

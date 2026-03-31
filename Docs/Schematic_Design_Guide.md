@@ -108,7 +108,50 @@ The Pololu DRV8874 carrier (15.2 x 17.8 mm) already includes: DRV8874 IC, VM byp
 
 ---
 
-## 2. Complete Pin Mapping Table
+## 2. Teensy 4.1 Pin Layout Diagram
+
+Complete pin-to-function mapping for this design. Left side faces the ICM-20948 IMU when the Teensy is rotated 90 degrees on the PCB.
+
+```
+Teensy 4.1 Pin Layout -- Current Design
+(showing all pin assignments and SPI alternate options)
+
+                 LEFT SIDE                          RIGHT SIDE
+                 (faces IMU)                        (away from IMU)
+
+            GND  ●                          ● VIN
+       (0)  D0   ●  ← ENC_A_PH_A           ● GND
+       (1)  D1   ●  ← ENC_A_PH_B [MISO1]   ● 3V3
+       (2)  D2   ●  ← MOTA_PWM              ● D23
+       (3)  D3   ●  ← MOTA_DIR              ● D22
+       (4)  D4   ●  free                    ● D21 (A7) ← MOTB_CUR
+       (5)  D5   ●  ← MOTB_PWM              ● D20 (A6) ← MOTA_CUR
+       (6)  D6   ●  ← MOTB_DIR              ● D19 (SCL) ← PM02_SCL
+       (7)  D7   ●  ← UART_RX               ● D18 (SDA) ← PM02_SDA
+       (8)  D8   ●  ← UART_TX               ● D17 ← ICM20948_INT
+       (9)  D9   ●  free                    ● D16
+      (10)  D10  ●  ← SPI CS  ✓             ● D15
+      (11)  D11  ●  ← SPI MOSI ✓            ● D14
+      (12)  D12  ●  ← SPI MISO ✓            ● D13 ← SPI SCK ✗ (wrong side!)
+            3V3  ●                          ● A14(38)
+      (24)  D24  ●  free                    ● A15(39)
+      (25)  D25  ●  free                    ● A16(40)
+      (26)  D26  ●  free [MOSI1]            ● A17(41)
+      (27)  D27  ●  free [SCK1]             ● D33 ← MOTA_FAULT
+      (28)  D28  ●  free                    ● D34 ← MOTB_FAULT
+      (29)  D29  ●  ← MOTA_SLEEP            ● D35
+      (30)  D30  ●  ← MOTB_SLEEP            ● D36
+      (31)  D31  ●  ← ENC_B_PH_A            ● D37
+      (32)  D32  ●  ← ENC_B_PH_B            ●
+
+  ✓ = SPI pin on correct side (short trace to IMU)
+  ✗ = SPI pin on wrong side (long trace, 37mm routed)
+  [MOSI1] [SCK1] [MISO1] = SPI1 alternate pin options (see Section 3.2)
+```
+
+---
+
+## 2b. Complete Pin Mapping Table
 
 ### Teensy 4.1 Master Pin Assignment
 
