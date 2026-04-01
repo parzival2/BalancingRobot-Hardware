@@ -1052,23 +1052,27 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Teensy:Teensy4.1"
+		(symbol "Mechanical:MountingHole_Pad"
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 1.016)
+				(hide yes)
 			)
 			(exclude_from_sim no)
-			(in_bom yes)
+			(in_bom no)
 			(on_board yes)
-			(property "Reference" "U"
-				(at 0 64.77 0)
+			(property "Reference" "H"
+				(at 0 6.35 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "Teensy4.1"
-				(at 0 62.23 0)
+			(property "Value" "MountingHole_Pad"
+				(at 0 4.445 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1076,6 +1080,109 @@
 				)
 			)
 			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Mounting Hole with connection"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*Pad*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MountingHole_Pad_0_1"
+				(circle
+					(center 0 1.27)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "MountingHole_Pad_1_1"
+				(pin input line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Teensy:Teensy4.1"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U1"
+				(at 0 66.04 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Teensy4.1"
+				(at 0 63.5 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Teensy41:Teensy41"
 				(at -10.16 10.16 0)
 				(effects
 					(font
@@ -1103,86 +1210,6 @@
 				)
 			)
 			(symbol "Teensy4.1_0_0"
-				(polyline
-					(pts
-						(xy -22.86 -6.35) (xy 22.86 -6.35)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -17.78 -7.62) (xy -17.78 -12.7)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -17.78 -26.67) (xy -17.78 -13.97)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 17.78 -9.525) (xy 17.78 -24.765)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(text "USB"
-					(at -15.875 -10.16 900)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(text "USB"
-					(at -15.875 -20.32 900)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(text "Device"
-					(at -13.97 -10.16 900)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(text "Host"
-					(at -13.97 -20.32 900)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
 				(text "(3.6v to 5.5v)"
 					(at 11.43 54.61 0)
 					(effects
@@ -1199,14 +1226,6 @@
 						)
 					)
 				)
-				(text "Ethernet"
-					(at 15.875 -17.145 900)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
 				(pin power_in line
 					(at -27.94 19.05 0)
 					(length 5.08)
@@ -1218,222 +1237,6 @@
 						)
 					)
 					(number "15"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at -27.94 -8.89 0)
-					(length 5.08)
-					(name "D-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "66"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at -27.94 -11.43 0)
-					(length 5.08)
-					(name "D+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "67"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at -27.94 -15.24 0)
-					(length 5.08)
-					(name "5V"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "55"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at -27.94 -17.78 0)
-					(length 5.08)
-					(name "D-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "56"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at -27.94 -20.32 0)
-					(length 5.08)
-					(name "D+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "57"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at -27.94 -22.86 0)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "58"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at -27.94 -25.4 0)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "59"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at -7.62 -33.02 90)
-					(length 5.08)
-					(name "VBAT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "50"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at -3.81 -33.02 90)
-					(length 5.08)
-					(name "3V3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "51"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 0 -33.02 90)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "52"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 3.81 -33.02 90)
-					(length 5.08)
-					(name "PROGRAM"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "53"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 7.62 -33.02 90)
-					(length 5.08)
-					(name "ON_OFF"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "54"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1477,155 +1280,11 @@
 						)
 					)
 				)
-				(pin output line
-					(at 27.94 52.07 180)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "47"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 27.94 49.53 180)
-					(length 5.08)
-					(name "3V3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "46"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 27.94 -10.16 180)
-					(length 5.08)
-					(name "R-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "65"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 27.94 -12.7 180)
-					(length 5.08)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "64"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 27.94 -15.24 180)
-					(length 5.08)
-					(name "T+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "63"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 27.94 -17.78 180)
-					(length 5.08)
-					(name "T-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "62"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 27.94 -20.32 180)
-					(length 5.08)
-					(name "LED"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "61"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 27.94 -22.86 180)
-					(length 5.08)
-					(name "R+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "60"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 			)
 			(symbol "Teensy4.1_0_1"
 				(rectangle
 					(start -22.86 60.96)
-					(end 22.86 -27.94)
+					(end 22.86 -7.62)
 					(stroke
 						(width 0)
 						(type solid)
@@ -1982,6 +1641,42 @@
 						)
 					)
 					(number "24"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 27.94 52.07 180)
+					(length 5.08)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "47"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 27.94 49.53 180)
+					(length 5.08)
+					(name "3V3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "46"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3113,10 +2808,22 @@
 		(uuid "b1e5146c-f6e7-4561-9abb-8cf3ebc2e960")
 	)
 	(junction
+		(at 40.64 156.21)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dbb065a5-71a4-47e2-b272-06200a670b34")
+	)
+	(junction
 		(at 58.42 26.67)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "dbef5017-ca31-4daa-9084-00db33fd4a48")
+	)
+	(junction
+		(at 40.64 171.45)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dd545dd9-cb75-4d77-ab1b-91a4870789aa")
 	)
 	(junction
 		(at 200.66 66.04)
@@ -3147,10 +2854,6 @@
 		(uuid "0d04c3ee-45e0-423c-be61-5d2aa9e4dae2")
 	)
 	(no_connect
-		(at 142.24 153.67)
-		(uuid "14260e3a-13e3-410f-9226-cbcc6b57c66b")
-	)
-	(no_connect
 		(at 198.12 114.3)
 		(uuid "1a13d57e-cac3-4031-a837-f6f4b71bf722")
 	)
@@ -3159,24 +2862,12 @@
 		(uuid "1bccf758-6da2-48b4-bf78-8027baf53373")
 	)
 	(no_connect
-		(at 198.12 143.51)
-		(uuid "28e3de82-029f-4cb5-9014-463cd6e79d98")
-	)
-	(no_connect
 		(at 142.24 111.76)
 		(uuid "2da4a571-d1a1-48ab-94c2-1ff3e63a1b1a")
 	)
 	(no_connect
 		(at 198.12 104.14)
 		(uuid "43877c19-655d-461b-8b36-1006d0b1a9b2")
-	)
-	(no_connect
-		(at 142.24 148.59)
-		(uuid "43a1e159-fb16-44cf-9137-62120310871c")
-	)
-	(no_connect
-		(at 162.56 163.83)
-		(uuid "4aa91ab6-638e-4564-8515-ca6f037b9d3c")
 	)
 	(no_connect
 		(at 142.24 121.92)
@@ -3203,24 +2894,8 @@
 		(uuid "6465b602-b198-4cdb-a0b2-f92268eff217")
 	)
 	(no_connect
-		(at 198.12 146.05)
-		(uuid "648cc8ec-8849-43a6-b929-3408a7578f62")
-	)
-	(no_connect
-		(at 173.99 163.83)
-		(uuid "699f7987-8518-4c5d-a794-14777fa0429b")
-	)
-	(no_connect
 		(at 142.24 88.9)
 		(uuid "7910ffff-e4b3-4965-a02b-3df66704f1cc")
-	)
-	(no_connect
-		(at 198.12 148.59)
-		(uuid "8a940142-14db-4752-a025-dca40d54c1e5")
-	)
-	(no_connect
-		(at 170.18 163.83)
-		(uuid "9345575a-8f94-404d-ab7b-2b985c8f06a3")
 	)
 	(no_connect
 		(at 198.12 124.46)
@@ -3231,22 +2906,6 @@
 		(uuid "a4d6e376-48fd-4846-9d30-8d3ccc1f0136")
 	)
 	(no_connect
-		(at 142.24 139.7)
-		(uuid "aad56949-0dbd-4b9b-8cf0-0ad2e165b241")
-	)
-	(no_connect
-		(at 198.12 140.97)
-		(uuid "b7662752-80c5-4705-bd13-2e69b0184969")
-	)
-	(no_connect
-		(at 142.24 151.13)
-		(uuid "b997696c-cfae-4135-b960-91b11c6e8fb5")
-	)
-	(no_connect
-		(at 142.24 146.05)
-		(uuid "bf12ab0d-1266-40bc-9ee6-b40932c15fa0")
-	)
-	(no_connect
 		(at 198.12 86.36)
 		(uuid "c34ba80a-572c-4480-87c8-b9b67a5b3470")
 	)
@@ -3255,36 +2914,12 @@
 		(uuid "c65c89e9-2a78-41a2-b380-856df7ecfcb4")
 	)
 	(no_connect
-		(at 198.12 151.13)
-		(uuid "c69694e7-5f3e-4121-8d79-69fc399e43f4")
-	)
-	(no_connect
-		(at 166.37 163.83)
-		(uuid "c85f364c-7027-49c5-9195-a9004c66b734")
-	)
-	(no_connect
-		(at 142.24 156.21)
-		(uuid "ccbbc295-94c5-4ea9-a055-def69df88e11")
-	)
-	(no_connect
 		(at 198.12 116.84)
 		(uuid "d635a152-1413-4888-aef6-dada80d1119e")
 	)
 	(no_connect
 		(at 142.24 114.3)
 		(uuid "d97389ff-71d6-4bfc-8998-7c52c352eeb1")
-	)
-	(no_connect
-		(at 177.8 163.83)
-		(uuid "f5ff0b7d-62b6-4fff-995e-7861cdddf572")
-	)
-	(no_connect
-		(at 142.24 142.24)
-		(uuid "fafcebdf-d9f1-4383-8f1d-50cc9cd7db03")
-	)
-	(no_connect
-		(at 198.12 153.67)
-		(uuid "fbe7b806-e5b0-403a-b3d5-87c32faff62f")
 	)
 	(wire
 		(pts
@@ -3458,6 +3093,16 @@
 	)
 	(wire
 		(pts
+			(xy 31.75 156.21) (xy 40.64 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "44a24d54-d7ae-4e7c-aa43-6e3f8e42b5cf")
+	)
+	(wire
+		(pts
 			(xy 198.12 81.28) (xy 212.09 81.28)
 		)
 		(stroke
@@ -3475,6 +3120,16 @@
 			(type default)
 		)
 		(uuid "4ef4c66b-b700-4d83-9d6a-d53cbc0863b8")
+	)
+	(wire
+		(pts
+			(xy 31.75 167.64) (xy 31.75 171.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "507e4d16-fca6-439d-b771-ebaf8a6b1f91")
 	)
 	(wire
 		(pts
@@ -3515,6 +3170,16 @@
 			(type default)
 		)
 		(uuid "5b400049-4555-436a-92f3-ed333e2c1375")
+	)
+	(wire
+		(pts
+			(xy 49.53 167.64) (xy 49.53 171.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "64e1d8e8-0bcb-4ad6-a83a-8b10f8c62f8e")
 	)
 	(wire
 		(pts
@@ -3678,6 +3343,16 @@
 	)
 	(wire
 		(pts
+			(xy 49.53 156.21) (xy 40.64 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a12c2cce-c473-43b2-b8fc-9ccbb460cfd4")
+	)
+	(wire
+		(pts
 			(xy 43.18 27.94) (xy 43.18 44.45)
 		)
 		(stroke
@@ -3748,6 +3423,16 @@
 	)
 	(wire
 		(pts
+			(xy 49.53 153.67) (xy 49.53 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b17f9e88-9178-4f2a-9a1a-0939f9f38610")
+	)
+	(wire
+		(pts
 			(xy 91.44 35.56) (xy 105.41 35.56)
 		)
 		(stroke
@@ -3765,6 +3450,16 @@
 			(type default)
 		)
 		(uuid "b57f13bd-451a-46b1-b92f-38951cf23b64")
+	)
+	(wire
+		(pts
+			(xy 31.75 171.45) (xy 40.64 171.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b629712a-3cd6-452f-b24d-b41731c4f1a4")
 	)
 	(wire
 		(pts
@@ -3898,6 +3593,16 @@
 	)
 	(wire
 		(pts
+			(xy 31.75 153.67) (xy 31.75 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f7cdf2ef-4390-47e8-bb58-01c03c49c80f")
+	)
+	(wire
+		(pts
 			(xy 198.12 76.2) (xy 200.66 76.2)
 		)
 		(stroke
@@ -3905,6 +3610,16 @@
 			(type default)
 		)
 		(uuid "f8a49718-3387-4412-87d7-b2d67ce46fd5")
+	)
+	(wire
+		(pts
+			(xy 49.53 171.45) (xy 40.64 171.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fc434eb2-aa75-4b85-992a-54491a454b61")
 	)
 	(global_label "MOTA_DIR"
 		(shape input)
@@ -4833,6 +4548,74 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 31.75 151.13 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2235cca7-6d36-479c-8dbd-e9202a7ae94e")
+		(property "Reference" "H1"
+			(at 34.29 148.5899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole_Pad"
+			(at 34.29 151.1299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 31.75 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 31.75 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 31.75 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "81bb8376-cc69-4d9a-87f3-38bc2b27d8db")
+		)
+		(instances
+			(project ""
+				(path "/661005af-94a5-46d4-b728-244dc03692ab"
+					(reference "H1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:Conn_01x02_Socket")
 		(at 140.97 29.21 0)
 		(mirror y)
@@ -5189,6 +4972,142 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 31.75 165.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "60ad4068-74a0-470f-9efc-47f59c06dc0c")
+		(property "Reference" "H3"
+			(at 34.29 162.5599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole_Pad"
+			(at 34.29 165.0999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 31.75 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 31.75 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 31.75 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "79ae5ddb-0f26-48d3-a90a-069661c62359")
+		)
+		(instances
+			(project "BalancingRobot_Teensy41"
+				(path "/661005af-94a5-46d4-b728-244dc03692ab"
+					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 49.53 165.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "647e0e9f-6a24-4eb0-a096-c84b11716772")
+		(property "Reference" "H4"
+			(at 52.07 162.5599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole_Pad"
+			(at 52.07 165.0999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 49.53 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 49.53 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 49.53 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6e4cc1ff-102d-4708-a69f-0e9c086a17b1")
+		)
+		(instances
+			(project "BalancingRobot_Teensy41"
+				(path "/661005af-94a5-46d4-b728-244dc03692ab"
+					(reference "H4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C_Polarized")
 		(at 204.47 66.04 90)
 		(unit 1)
@@ -5250,6 +5169,71 @@
 			(project ""
 				(path "/661005af-94a5-46d4-b728-244dc03692ab"
 					(reference "C8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 40.64 156.21 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8bf6258c-e5b7-4584-887d-f5f9d844cd1c")
+		(property "Reference" "#PWR07"
+			(at 40.64 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 40.64 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 40.64 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 40.64 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 40.64 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cdb7e309-c824-4799-9de5-2e4e07f145f0")
+		)
+		(instances
+			(project "BalancingRobot_Teensy41"
+				(path "/661005af-94a5-46d4-b728-244dc03692ab"
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -5391,6 +5375,71 @@
 			(project ""
 				(path "/661005af-94a5-46d4-b728-244dc03692ab"
 					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 40.64 171.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b4ff2433-079e-47ad-b69d-eecca6f43a2f")
+		(property "Reference" "#PWR08"
+			(at 40.64 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 40.64 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 40.64 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 40.64 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 40.64 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1219f570-be46-4372-b690-f582984e1443")
+		)
+		(instances
+			(project "BalancingRobot_Teensy41"
+				(path "/661005af-94a5-46d4-b728-244dc03692ab"
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -5594,9 +5643,6 @@
 		(pin "40"
 			(uuid "8f5f6513-f767-4eb5-a010-a3bf2b5c867f")
 		)
-		(pin "58"
-			(uuid "7945848d-a2eb-4e6a-9a68-df3cb46eac42")
-		)
 		(pin "48"
 			(uuid "5d377a94-04b0-40e2-994f-e76ce9683c4b")
 		)
@@ -5605,9 +5651,6 @@
 		)
 		(pin "3"
 			(uuid "91809b3b-2adc-4998-85c1-ef303d9632ae")
-		)
-		(pin "50"
-			(uuid "446ac06a-cae1-4d94-b7e5-daaa58d35d14")
 		)
 		(pin "8"
 			(uuid "b2a98f17-f7ec-4ac0-be7b-d75c11b738cd")
@@ -5627,9 +5670,6 @@
 		(pin "43"
 			(uuid "9f36cf42-a51f-4552-b1b3-72693ea73b4a")
 		)
-		(pin "65"
-			(uuid "ed554cf4-d2c2-419c-becb-916beec5a8e3")
-		)
 		(pin "38"
 			(uuid "dfffb5a1-f953-463e-94ba-9fca09da8e9e")
 		)
@@ -5638,12 +5678,6 @@
 		)
 		(pin "9"
 			(uuid "8898dff0-47d8-44b1-9a52-d0b5b03d794c")
-		)
-		(pin "53"
-			(uuid "65bd2f2d-31b8-4ec3-964a-7b871f5e8b13")
-		)
-		(pin "63"
-			(uuid "2453918d-7b53-49c6-8a40-18c8bd2ca69b")
 		)
 		(pin "13"
 			(uuid "215620da-b05a-43b9-b7de-f80da04b7cc4")
@@ -5654,17 +5688,11 @@
 		(pin "20"
 			(uuid "58f2ec9d-6a80-4cf7-8d96-d8117070608d")
 		)
-		(pin "64"
-			(uuid "12f2533f-f042-40d4-a24f-e282c3fff0ea")
-		)
 		(pin "7"
 			(uuid "97bf3e8f-1395-4169-99eb-42a8e8fe5fbb")
 		)
 		(pin "18"
 			(uuid "5ffec5d7-dc2d-42a4-97fe-4176888da289")
-		)
-		(pin "57"
-			(uuid "68107f37-f2da-4c54-ba49-4a7480747540")
 		)
 		(pin "1"
 			(uuid "d8dafbc1-8ed6-4d29-8765-947eaecc9ded")
@@ -5681,35 +5709,17 @@
 		(pin "47"
 			(uuid "c0396e13-65af-4bde-8c25-6b2bf17b1349")
 		)
-		(pin "62"
-			(uuid "1181ea7b-095c-46a1-96e2-58ab5410841a")
-		)
 		(pin "16"
 			(uuid "e0e63fa3-5c64-45e0-b396-3d1879accfd2")
 		)
-		(pin "56"
-			(uuid "cca8f73d-5dba-4df0-9093-74db2c8746a0")
-		)
 		(pin "17"
 			(uuid "aa98a78f-3924-4571-8d1a-c200ec043478")
-		)
-		(pin "66"
-			(uuid "f16e178c-b9b0-4472-b0ff-035826ecf97f")
-		)
-		(pin "61"
-			(uuid "5a2d7944-8aeb-4882-ad7f-9058d38a6c77")
-		)
-		(pin "67"
-			(uuid "65b69a9a-efa0-424a-95ee-2174b1e48177")
 		)
 		(pin "23"
 			(uuid "d051232b-93d7-4569-935d-0ff012a82fe8")
 		)
 		(pin "45"
 			(uuid "2d87cd9c-4a18-4a1f-858f-467d9fad3c88")
-		)
-		(pin "54"
-			(uuid "fe05745e-6ab5-4afa-999d-b03c616bddfd")
 		)
 		(pin "32"
 			(uuid "3f507a3f-b2ed-4f52-baf5-e4cb55ef5476")
@@ -5729,14 +5739,8 @@
 		(pin "15"
 			(uuid "fc772df2-9660-4cac-a930-66af1908f7a7")
 		)
-		(pin "51"
-			(uuid "01e44d23-fe2a-4475-b83c-043e3c4c1199")
-		)
 		(pin "36"
 			(uuid "362d0dfa-0eab-4057-b94e-e17f030188fd")
-		)
-		(pin "59"
-			(uuid "263b07c7-3e1c-48d3-b6ca-b8576948443a")
 		)
 		(pin "27"
 			(uuid "64e12a84-dffc-4956-8305-61366ff7a17d")
@@ -5753,23 +5757,14 @@
 		(pin "30"
 			(uuid "52e36396-b623-4a49-8655-c34be1aa235a")
 		)
-		(pin "60"
-			(uuid "ea6470c3-f62c-42ac-bcf7-3360091cf602")
-		)
 		(pin "25"
 			(uuid "6b062a66-b3d0-4e00-b1a6-e0335b372af3")
-		)
-		(pin "52"
-			(uuid "a92efd2e-a43e-4bda-89d8-ce2e1348e2e2")
 		)
 		(pin "34"
 			(uuid "34de95b1-3703-4e42-beb2-a7aa763a054a")
 		)
 		(pin "39"
 			(uuid "d41faac1-8c9f-45b4-a1f5-73948ad00754")
-		)
-		(pin "55"
-			(uuid "5cea0305-6a5e-4220-ba53-3247c72e98bf")
 		)
 		(pin "14"
 			(uuid "4b55407a-0759-41c1-bae3-a6727858d81e")
@@ -5988,6 +5983,74 @@
 			(project "BalancingRobot_Teensy41"
 				(path "/661005af-94a5-46d4-b728-244dc03692ab"
 					(reference "#PWR014")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 49.53 151.13 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "eabfbf82-b1dc-4a6f-be0c-2319d5459743")
+		(property "Reference" "H2"
+			(at 52.07 148.5899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole_Pad"
+			(at 52.07 151.1299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 49.53 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 49.53 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 49.53 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b7563edb-b84e-4425-8acc-b3fdb1bc02a9")
+		)
+		(instances
+			(project "BalancingRobot_Teensy41"
+				(path "/661005af-94a5-46d4-b728-244dc03692ab"
+					(reference "H2")
 					(unit 1)
 				)
 			)
